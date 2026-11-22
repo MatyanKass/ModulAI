@@ -292,6 +292,14 @@ Java_com_modulai_engine_llamacpp_LlamaNative_generate(
     auto * s = (Session *) handle;
     s->cancel.store(false);
 
+    jclass cbClass = env->GetObjectClass(callback);
+    jmethodID onPiece = env->GetMethodID(cbClass, "onPiece", "([B)V");
+    if (!onPiece) {
+        // Leaves NoSuchMethodError pending for the caller instead of crashing the process.
+        LOGE("PieceCallback.onPiece is missing; was it stripped by the shrinker?");
+        return ERR_DECODE;
+    }
+
     Rendered r;
     if (!render(env, s, roles, contents, thinking, r)) return ERR_TEMPLATE;
 
@@ -322,8 +330,6 @@ Java_com_modulai_engine_llamacpp_LlamaNative_generate(
     common_sampler * sampler = common_sampler_init(s->model, sp);
     if (!sampler) return ERR_DECODE;
 
-    jclass cbClass = env->GetObjectClass(callback);
-    jmethodID onPiece = env->GetMethodID(cbClass, "onPiece", "([B)V");
     std::string pending; // bytes not yet delivered because they end mid-codepoint
     auto emit = [&](const std::string & piece) {
         pending += piece;

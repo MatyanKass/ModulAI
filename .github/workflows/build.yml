@@ -22,6 +22,8 @@ jobs:
         run: ./gradlew test
       - name: Assemble APK
         run: ./gradlew :app:assembleRelease
+      - name: Check the packaged APK
+        run: tools/check-apk.sh app/build/outputs/apk/release/app-release.apk
       - uses: actions/upload-artifact@v4
         with:
           # The short commit hash tells testers which build they have.
