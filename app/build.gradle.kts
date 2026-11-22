@@ -37,6 +37,8 @@ android {
 dependencies {
     implementation(project(":core:runtime"))
     implementation(project(":core:device"))
+    implementation(project(":core:models"))
+    implementation(project(":engines:llm-llamacpp"))
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

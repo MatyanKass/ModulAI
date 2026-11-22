@@ -1,6 +1,7 @@
 package com.modulai.app.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,15 +27,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.modulai.app.R
 
-private data class ModuleCard(@StringRes val title: Int, @StringRes val desc: Int, val icon: ImageVector)
+private data class ModuleCard(
+    @StringRes val title: Int,
+    @StringRes val desc: Int,
+    val icon: ImageVector,
+    val ready: Boolean = false,
+)
 
 private val modules = listOf(
-    ModuleCard(R.string.mod_chat, R.string.mod_chat_desc, Icons.Outlined.Chat),
+    ModuleCard(R.string.mod_chat, R.string.mod_chat_desc, Icons.Outlined.Chat, ready = true),
     ModuleCard(R.string.mod_rp, R.string.mod_rp_desc, Icons.Outlined.TheaterComedy),
     ModuleCard(R.string.mod_research, R.string.mod_research_desc, Icons.Outlined.TravelExplore),
     ModuleCard(R.string.mod_code, R.string.mod_code_desc, Icons.Outlined.Code),
@@ -45,7 +52,7 @@ private val modules = listOf(
 )
 
 @Composable
-fun ModulesScreen() {
+fun ModulesScreen(onOpenChat: () -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(160.dp),
         modifier = Modifier.fillMaxSize(),
@@ -54,8 +61,10 @@ fun ModulesScreen() {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(modules) { module ->
-            // No module is wired up yet; cards become clickable as stages land.
-            ElevatedCard {
+            // Chat is the only module wired up so far; the rest open as stages land.
+            ElevatedCard(
+                modifier = if (module.ready) Modifier.clickable(onClick = onOpenChat) else Modifier.alpha(0.6f),
+            ) {
                 Column(Modifier.padding(16.dp)) {
                     Icon(module.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.height(12.dp))
@@ -65,12 +74,14 @@ fun ModulesScreen() {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Spacer(Modifier.height(12.dp))
-                    Text(
-                        stringResource(R.string.soon),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.tertiary,
-                    )
+                    if (!module.ready) {
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            stringResource(R.string.soon),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.tertiary,
+                        )
+                    }
                 }
             }
         }

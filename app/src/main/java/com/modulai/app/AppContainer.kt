@@ -3,26 +3,85 @@ package com.modulai.app
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.modulai.core.device.DeviceInspector
+import com.modulai.core.models.ModelStore
+import com.modulai.core.runtime.Effort
 import com.modulai.core.runtime.EngineRegistry
+import com.modulai.engine.llamacpp.LlamaCppEngine
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 private val Context.settings by preferencesDataStore("settings")
 
 /** App-wide singletons. Engines register themselves here as they are added. */
 class AppContainer(private val context: Context) {
-    val engines = EngineRegistry()
+    val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    val engines = EngineRegistry().apply { register(LlamaCppEngine(context)) }
     val device = DeviceInspector(context)
+    val models = ModelStore(context)
 
     val ageConfirmed: Flow<Boolean> = context.settings.data.map { it[AGE_CONFIRMED] ?: false }
+
+    val runSettings = context.settings.data.map { p ->
+        val d = RunSettings()
+        RunSettings(
+            preset = p[PRESET]?.let { name -> Preset.entries.find { it.name == name } } ?: d.preset,
+            contextTokens = p[CONTEXT] ?: d.contextTokens,
+            effort = p[EFFORT]?.let { name -> Effort.entries.find { it.name == name } } ?: d.effort,
+            threads = p[THREADS] ?: defaultThreads(),
+            lockMemory = p[MLOCK] ?: d.lockMemory,
+            useMmap = p[MMAP] ?: d.useMmap,
+            temperature = p[TEMPERATURE] ?: d.temperature,
+            systemPrompt = p[SYSTEM_PROMPT] ?: d.systemPrompt,
+        )
+    }.stateIn(scope, SharingStarted.Eagerly, RunSettings(threads = defaultThreads()))
+
+    val chat = ChatController(this)
+    val downloads = ModelDownloads(this)
 
     suspend fun confirmAge() {
         context.settings.edit { it[AGE_CONFIRMED] = true }
     }
 
+    suspend fun save(s: RunSettings) {
+        context.settings.edit {
+            it[PRESET] = s.preset.name
+            it[CONTEXT] = s.contextTokens
+            it[EFFORT] = s.effort.name
+            it[THREADS] = s.threads
+            it[MLOCK] = s.lockMemory
+            it[MMAP] = s.useMmap
+            it[TEMPERATURE] = s.temperature
+            it[SYSTEM_PROMPT] = s.systemPrompt
+        }
+    }
+
+    /** Fast cores only: adding the slow ones usually makes token generation slower. */
+    private fun defaultThreads(): Int {
+        val p = device.inspect()
+        val big = if (p.bigCores in 1 until p.cpuCores) p.cpuCores - p.bigCores else p.cpuCores
+        // On two-tier chips the larger group is the workhorse; cap to keep the UI responsive.
+        return maxOf(p.bigCores, big).coerceIn(2, 6)
+    }
+
     private companion object {
         val AGE_CONFIRMED = booleanPreferencesKey("age_confirmed")
+        val PRESET = stringPreferencesKey("preset")
+        val CONTEXT = intPreferencesKey("context")
+        val EFFORT = stringPreferencesKey("effort")
+        val THREADS = intPreferencesKey("threads")
+        val MLOCK = booleanPreferencesKey("mlock")
+        val MMAP = booleanPreferencesKey("mmap")
+        val TEMPERATURE = floatPreferencesKey("temperature")
+        val SYSTEM_PROMPT = stringPreferencesKey("system_prompt")
     }
 }
