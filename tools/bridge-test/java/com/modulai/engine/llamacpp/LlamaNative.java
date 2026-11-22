@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 public class LlamaNative {
     public native void init(String dir);
     public native String systemInfo();
+    public native int backendCount();
+    public native String lastError();
     public native long load(String path, int nCtx, int nThreads, int nGpuLayers, boolean mlock, boolean mmap);
     public native void free(long h);
     public native int contextSize(long h);
@@ -57,7 +59,9 @@ public class LlamaNative {
         long h = n.load(a[1] + "/smol.gguf", 2048, threads, 0, false, true);
         check(h != 0, "load smol");
         check(n.contextSize(h) == 2048, "context size");
+        check(n.backendCount() > 0, "a compute backend is registered");
         check(n.load("/nonexistent.gguf", 2048, threads, 0, false, true) == 0, "missing file returns 0");
+        check(n.lastError().contains("nonexistent"), "load failure explains itself: " + n.lastError());
 
         String[] r1 = {"system", "user"};
         String[] c1 = {"You are a helpful assistant.", "Привет! Tell me one sentence about cats 😀"};

@@ -46,10 +46,16 @@ class LlamaCppEngine(context: Context) : Engine {
             LlamaNative.init(nativeLibDir)
             initialized = true
         }
+        if (LlamaNative.backendCount() == 0) {
+            throw GenerationException("No compute backend was found in $nativeLibDir")
+        }
         val handle = LlamaNative.load(
             model.path, config.contextTokens, config.threads, 0, config.lockMemory, config.useMmap,
         )
-        if (handle == 0L) throw GenerationException("Could not load ${model.path}")
+        if (handle == 0L) {
+            val reason = LlamaNative.lastError().ifBlank { "unknown error" }
+            throw GenerationException("Could not load ${model.id}: $reason")
+        }
         LlamaSession(handle, model, dispatcher)
     }
 }

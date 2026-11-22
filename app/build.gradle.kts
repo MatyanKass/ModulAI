@@ -32,6 +32,9 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { compose = true }
+    // llama.cpp dlopen()s its CPU backends by file path, so the libraries have to be
+    // extracted on install; by default they stay inside the APK and are never found.
+    packaging { jniLibs { useLegacyPackaging = true } }
 }
 
 dependencies {

@@ -19,6 +19,8 @@ internal object LlamaNative {
 
     external fun init(nativeLibDir: String)
     external fun systemInfo(): String
+    external fun backendCount(): Int
+    external fun lastError(): String
     external fun load(
         path: String, nCtx: Int, nThreads: Int, nGpuLayers: Int, useMlock: Boolean, useMmap: Boolean,
     ): Long

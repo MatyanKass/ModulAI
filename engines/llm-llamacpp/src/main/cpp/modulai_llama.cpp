@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include <atomic>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -40,9 +41,25 @@ struct Session {
     std::atomic<bool> cancel{false};
 };
 
+// Errors llama.cpp reported since the last load started, shown to the user when it fails.
+std::mutex g_error_mutex;
+std::string g_last_error;
+
+void clear_errors() {
+    std::lock_guard<std::mutex> lock(g_error_mutex);
+    g_last_error.clear();
+}
+
+void add_error(const std::string & text) {
+    std::lock_guard<std::mutex> lock(g_error_mutex);
+    // The first lines name the cause; later ones only repeat that the load failed.
+    if (g_last_error.size() < 600) g_last_error += text;
+}
+
 void log_callback(ggml_log_level level, const char * text, void *) {
     if (level == GGML_LOG_LEVEL_ERROR) {
         __android_log_write(ANDROID_LOG_ERROR, TAG, text);
+        add_error(text);
     } else if (level == GGML_LOG_LEVEL_WARN) {
         __android_log_write(ANDROID_LOG_WARN, TAG, text);
     }
@@ -175,6 +192,24 @@ Java_com_modulai_engine_llamacpp_LlamaNative_init(JNIEnv * env, jobject, jstring
     ggml_backend_load_all_from_path(dir.c_str());
     llama_backend_init();
     LOGI("backends loaded from %s: %s", dir.c_str(), llama_print_system_info());
+    if (ggml_backend_reg_count() == 0) {
+        LOGE("no ggml backend found in %s", dir.c_str());
+    }
+}
+
+JNIEXPORT jint JNICALL
+Java_com_modulai_engine_llamacpp_LlamaNative_backendCount(JNIEnv *, jobject) {
+    return (jint) ggml_backend_reg_count();
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_modulai_engine_llamacpp_LlamaNative_lastError(JNIEnv * env, jobject) {
+    std::lock_guard<std::mutex> lock(g_error_mutex);
+    // Error text is ASCII from llama.cpp plus a file path; replace anything else so NewStringUTF is safe.
+    std::string safe = g_last_error;
+    while (!safe.empty() && isspace((unsigned char) safe.back())) safe.pop_back();
+    for (auto & c : safe) if ((unsigned char) c >= 0x80) c = '?';
+    return env->NewStringUTF(safe.c_str());
 }
 
 JNIEXPORT jstring JNICALL
@@ -194,6 +229,7 @@ Java_com_modulai_engine_llamacpp_LlamaNative_load(
     else mp.load_mode = LLAMA_LOAD_MODE_NONE;
 
     const std::string file = to_string(env, path);
+    clear_errors();
     llama_model * model = llama_model_load_from_file(file.c_str(), mp);
     if (!model) {
         LOGE("failed to load model %s", file.c_str());

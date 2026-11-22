@@ -41,8 +41,6 @@ android {
             version = "3.22.1"
         }
     }
-    // Backends are dlopen'ed by path, so the .so files must be extracted on install.
-    packaging { jniLibs { useLegacyPackaging = true } }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
