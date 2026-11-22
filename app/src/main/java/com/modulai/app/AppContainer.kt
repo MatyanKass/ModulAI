@@ -65,13 +65,11 @@ class AppContainer(private val context: Context) {
         }
     }
 
-    /** Fast cores only: adding the slow ones usually makes token generation slower. */
-    private fun defaultThreads(): Int {
-        val p = device.inspect()
-        val big = if (p.bigCores in 1 until p.cpuCores) p.cpuCores - p.bigCores else p.cpuCores
-        // On two-tier chips the larger group is the workhorse; cap to keep the UI responsive.
-        return maxOf(p.bigCores, big).coerceIn(2, 6)
-    }
+    /**
+     * Half the cores, at most four. Measured on a Snapdragon 8 Elite (2 + 6 cores):
+     * 4 threads gave 45 tok/s, 6 gave 40, and 2 or 8 gave 28.
+     */
+    private fun defaultThreads() = (Runtime.getRuntime().availableProcessors() / 2).coerceIn(2, 4)
 
     private companion object {
         val AGE_CONFIRMED = booleanPreferencesKey("age_confirmed")

@@ -6,7 +6,24 @@
 set -e
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 OUT=${OUT:-$ROOT/build/bridge-test}
-JNI=$(dirname "$(dirname "$(readlink -f "$(command -v javac)")")")/include
+
+# Some distributions (Alpine) install the JDK without putting javac on PATH.
+if [ -z "$JAVA_HOME" ] || [ ! -f "$JAVA_HOME/include/jni.h" ]; then
+    JAVA_HOME=
+    if command -v javac > /dev/null; then
+        JAVA_HOME=$(dirname "$(dirname "$(readlink -f "$(command -v javac)")")")
+    else
+        for d in /usr/lib/jvm/*; do
+            [ -f "$d/include/jni.h" ] && [ -x "$d/bin/javac" ] && JAVA_HOME=$d
+        done
+    fi
+fi
+if [ ! -f "$JAVA_HOME/include/jni.h" ]; then
+    echo "No JDK found: install one or set JAVA_HOME" >&2
+    exit 1
+fi
+PATH=$JAVA_HOME/bin:$PATH
+JNI=$JAVA_HOME/include
 mkdir -p "$OUT/models" "$OUT/classes"
 
 fetch() {
@@ -18,8 +35,10 @@ fetch qwen.gguf "https://huggingface.co/unsloth/Qwen3-0.6B-GGUF/resolve/main/Qwe
 cmake -S "$ROOT/tools/bridge-test" -B "$OUT/native" -DCMAKE_BUILD_TYPE=Release -DJNI_INCLUDE="$JNI" \
     -DBUILD_SHARED_LIBS=OFF -DGGML_NATIVE=ON -DGGML_OPENMP=OFF -DGGML_LLAMAFILE=OFF \
     -DLLAMA_BUILD_COMMON=ON -DLLAMA_BUILD_APP=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_TOOLS=OFF \
-    -DLLAMA_BUILD_EXAMPLES=OFF -DLLAMA_BUILD_SERVER=OFF -DLLAMA_OPENSSL=OFF > "$OUT/cmake.log" 2>&1
-cmake --build "$OUT/native" --target modulai-llama -j "$(nproc)" > "$OUT/build.log" 2>&1
+    -DLLAMA_BUILD_EXAMPLES=OFF -DLLAMA_BUILD_SERVER=OFF -DLLAMA_OPENSSL=OFF > "$OUT/cmake.log" 2>&1 \
+    || { echo "configure failed, see $OUT/cmake.log" >&2; exit 1; }
+cmake --build "$OUT/native" --target modulai-llama -j "$(nproc)" > "$OUT/build.log" 2>&1 \
+    || { echo "build failed, see $OUT/build.log" >&2; exit 1; }
 
 javac -d "$OUT/classes" "$ROOT"/tools/bridge-test/java/com/modulai/engine/llamacpp/*.java
 java -cp "$OUT/classes" com.modulai.engine.llamacpp.LlamaNative "$OUT/native" "$OUT/models" "$@"
