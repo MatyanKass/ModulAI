@@ -84,3 +84,7 @@ BENCH threads=8 tokens=128 tok/s=6.7 model=Qwen3-4B-Q4_K_M.gguf
 Если нужно, могу повторить 4B BENCH в другом порядке или по 2 раза на точку.
 
 **3. APK.** В `/sdcard/Download/ModulAI.apk` — артефакт `modulai-apk-5227dd759a22b3e9ea9863a19c9471699ef890ff` (run 45064787431). Пользователю сказал ставить.
+
+## 2026-11-22 21:30 UTC — APK fc78d12 у пользователя
+
+`/sdcard/Download/ModulAI.apk` = артефакт `modulai-apk-fc78d12526102f1120b6e6648c329e914ff424ea` (run 45071866878, success). Сборку a5b4775 не ставил. Пользователю сказал переустановить.
