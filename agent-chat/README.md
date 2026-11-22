@@ -46,23 +46,40 @@ Android-приложение: каталог нейросетей и модул�
 нативная часть на x86-сервере. Поэтому первая задача phone — убедиться, что оно
 вообще работает.
 
+## Роль сессии phone
+
+Тесты проводит phone, в своём окружении на телефоне. Управлять самим
+Android-приложением (adb, нажатия, логи приложения) не требуется.
+
+1. **Тесты нативной части.** `tools/bridge-test/run.sh` собирает тот же C++-мост к
+   llama.cpp, что лежит в APK, под процессор телефона и прогоняет его из обычной
+   JVM: загрузка модели, генерация, кириллица и эмодзи, кэш между репликами,
+   остановка, переполнение контекста, лимит размышлений, замер ток/с при разном
+   числе потоков. Это настоящий Snapdragon, а не сервер, поэтому цифры скорости
+   оттуда — главное, что нужно cloud.
+2. **Установщик для пользователя.** Свежий APK phone кладёт в
+   `/sdcard/Download/ModulAI.apk` и сообщает пользователю в своём чате, что его
+   можно ставить. Ставит и проверяет интерфейс сам пользователь.
+3. **Данные от пользователя.** Если пользователь что-то сообщает о работе
+   приложения (скорость, падение, скриншот в `/sdcard`), phone записывает это в
+   `from-phone.md`.
+
 ## Что нужно сессии phone для работы
 
-- `git` с правом пуша в этот репозиторий.
-- `adb`: `apk add android-tools`, затем пользователь включает «Беспроводную
-  отладку» и делает сопряжение (`adb pair localhost:ПОРТ`, потом
-  `adb connect localhost:ПОРТ`). Без adb доступны только файлы в `/sdcard`.
-- APK: пользователь получает его от cloud в чате и кладёт в `/sdcard/Download/`
-  (имя вида `app-release.apk`). Версию видно по `adb shell dumpsys package
-  com.modulai.app | grep versionName`.
+- `git` с правом пуша в этот репозиторий; подмодули: `git submodule update --init
+  --depth 1`.
+- Для `run.sh` в Alpine: `apk add build-base cmake openjdk17 curl linux-headers`.
+  Сборка занимает 10–20 минут, нужно около 2 ГБ места и 500 МБ на две тестовые
+  модели (скачиваются сами).
+- Откуда брать APK: артефакт `modulai-apk` последней успешной сборки «Build APK»
+  в GitHub Actions (`gh run download`, если `gh` авторизован). Если доступа нет —
+  пользователь получает APK от cloud в чате и кладёт в `/sdcard/Download/` сам.
 
 ## Полезные команды
 
 ```
-adb install -r /sdcard/Download/app-release.apk
-adb shell am start -n com.modulai.app/.MainActivity
-adb logcat -c                                   # очистить перед тестом
-adb logcat -d -s modulai-llama:V AndroidRuntime:E libc:F DEBUG:F
-adb shell dumpsys meminfo com.modulai.app | head -30
-adb exec-out screencap -p > /sdcard/Download/modulai-screen.png
+git pull --rebase && git submodule update --init --depth 1
+OUT=$HOME/modulai-test tools/bridge-test/run.sh                # все тесты + замер
+OUT=$HOME/modulai-test tools/bridge-test/run.sh /путь/к.gguf   # замер на своей модели
+ls /sdcard/Android/data/com.modulai.app/files/models/          # модели приложения
 ```
