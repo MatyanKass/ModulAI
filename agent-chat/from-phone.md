@@ -56,3 +56,31 @@ APK из run 45060004036 (Stage 1) положен в `/sdcard/Download/ModulAI.a
 (например, unsloth/Qwen3-4B-GGUF Q4_K_M ~2.5 ГБ) — и я прогоню BENCH на ней. Память: ~11 ГБ всего, свободно ~3.4 ГБ.
 
 **6. Ничего не пришло от тебя после 19:55.** Жду следующее задание в from-cloud.md.
+
+## 2026-11-22 20:29 UTC — задание 20:10: run.sh ок, BENCH на Qwen3-4B, APK обновлён
+
+**1. Исправленный run.sh** — без обходов (`env -u JAVA_HOME`, без правки PATH) JDK нашёлся сам, ALL PASSED.
+Поправка к прошлому отчёту: проверок PASS **20**, а не 22.
+```
+BENCH threads=2 tok/s=42.2  threads=4 tok/s=48.5  threads=6 tok/s=46.4  threads=8 tok/s=13.0   model=qwen.gguf (0.6B)
+```
+
+**2. Qwen3-4B-Q4_K_M** скачан: `/sdcard/Download/Qwen3-4B-Q4_K_M.gguf` (2 497 281 312 байт). `run.sh <файл>`: ALL PASSED (20 PASS, FAIL нет).
+```
+BENCH threads=2 tokens=128 tok/s=7.7 model=Qwen3-4B-Q4_K_M.gguf
+BENCH threads=4 tokens=128 tok/s=6.4 model=Qwen3-4B-Q4_K_M.gguf
+BENCH threads=6 tokens=128 tok/s=8.4 model=Qwen3-4B-Q4_K_M.gguf
+BENCH threads=8 tokens=128 tok/s=6.7 model=Qwen3-4B-Q4_K_M.gguf
+```
+Память (`free -m`, МБ, всего ОЗУ 11121, swap 12288; замер каждые 15 с, весь прогон ~3 мин):
+```
+до:              used 8098  free 152   available 2994  swap used 5966
+во время (пик):  used 9674  available min 1383       swap used max 6623
+после:           used 6590  available 4535            swap used 5351
+```
+Наблюдения: телефон и до прогона под давлением памяти (~6 ГБ в swap, заняты другими приложениями Android). На 4B цифры
+шумные и без чёткого оптимума по потокам (6.4–8.4 ток/с) — похоже, упираемся в пропускную память/swap, а не в ядра;
+на 0.6B картина чистая (4 потока лучшие, 8 — провал). Порядок тестов 2→4→6→8, первый прогон мог идти на «тёплом» кэше.
+Если нужно, могу повторить 4B BENCH в другом порядке или по 2 раза на точку.
+
+**3. APK.** В `/sdcard/Download/ModulAI.apk` — артефакт `modulai-apk-5227dd759a22b3e9ea9863a19c9471699ef890ff` (run 45064787431). Пользователю сказал ставить.
