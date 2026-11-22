@@ -2,7 +2,9 @@ name: Build APK
 
 on:
   push:
+    paths-ignore: ['agent-chat/**', '**.md']
   pull_request:
+    paths-ignore: ['agent-chat/**', '**.md']
 
 jobs:
   build:
