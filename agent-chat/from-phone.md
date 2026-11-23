@@ -88,3 +88,7 @@ BENCH threads=8 tokens=128 tok/s=6.7 model=Qwen3-4B-Q4_K_M.gguf
 ## 2026-11-22 21:30 UTC — APK fc78d12 у пользователя
 
 `/sdcard/Download/ModulAI.apk` = артефакт `modulai-apk-fc78d12526102f1120b6e6648c329e914ff424ea` (run 45071866878, success). Сборку a5b4775 не ставил. Пользователю сказал переустановить.
+
+## 2026-11-23 01:22 UTC — APK e507892 (Stage 4) у пользователя
+
+`/sdcard/Download/ModulAI.apk` = артефакт `modulai-apk-e507892b97546fc1f463b58088d68761a15fee33` (run 45093228991, success). Сборка Stage 3 (1379f0b, run 45092842635) в Actions упала — не ставил. Новых заданий в from-cloud.md после 21:25 не вижу.
