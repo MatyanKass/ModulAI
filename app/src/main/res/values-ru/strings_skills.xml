@@ -1,0 +1,49 @@
+<resources>
+    <string name="ext_title">Навыки и MCP</string>
+    <string name="ext_tab_skills">Навыки</string>
+    <string name="ext_tab_mcp">MCP-серверы</string>
+    <string name="ext_save">Сохранить</string>
+
+    <string name="skills_about">Навык — это инструкция для одного типа задач. Модель видит только список включённых навыков, а полный текст подгружает, когда он понадобится, поэтому навыки почти не занимают контекст.</string>
+    <string name="skills_from_link">По ссылке</string>
+    <string name="skills_from_file">Из файла</string>
+    <string name="skills_installing">Устанавливаю…</string>
+    <string name="skills_empty">Навыков пока нет. Установите навык по ссылке или из файла SKILL.md либо ZIP-архива.</string>
+    <string name="skills_built_in">Встроенный</string>
+    <string name="skills_restore">Вернуть встроенные навыки</string>
+    <string name="skills_link_title">Установка по ссылке</string>
+    <string name="skills_link_body">Вставьте ссылку на файл SKILL.md, на ZIP-архив или на папку с навыком на GitHub.</string>
+    <string name="skills_link_hint">Ссылка</string>
+    <string name="skills_link_install">Установить</string>
+    <string name="skills_install_failed">Не удалось установить навык</string>
+    <string name="skills_needs_tools">Использует инструменты: %1$s</string>
+    <string name="skills_files">Дополнительные файлы: %1$s</string>
+    <string name="skills_delete_title">Удалить этот навык?</string>
+
+    <string name="mcp_about">MCP (Model Context Protocol) подключает к модели инструменты с удалённого сервера: поиск, базы данных, ваши собственные сервисы. Добавляйте только те серверы, которым доверяете: всё, что возвращает инструмент, попадает к модели, а то, что модель передаёт инструменту, уходит с устройства.</string>
+    <string name="mcp_add">Добавить сервер</string>
+    <string name="mcp_empty">Серверов пока нет.</string>
+    <string name="mcp_edit_title">MCP-сервер</string>
+    <string name="mcp_name">Название</string>
+    <string name="mcp_url">Адрес сервера</string>
+    <string name="mcp_url_hint">Начинается с https://</string>
+    <string name="mcp_header_name">Имя заголовка (необязательно)</string>
+    <string name="mcp_header_name_hint">Оставьте пустым, чтобы отправлять «Authorization: Bearer …»</string>
+    <string name="mcp_header_value">Токен или ключ (необязательно)</string>
+    <string name="mcp_header_value_hint">Хранится только на этом устройстве.</string>
+    <string name="mcp_test">Проверить подключение</string>
+    <string name="mcp_testing">Подключаюсь…</string>
+    <string name="mcp_status_off">Выключен</string>
+    <string name="mcp_status_idle">Ещё не подключался</string>
+    <string name="mcp_status_connecting">Подключаюсь…</string>
+    <string name="mcp_status_failed">Ошибка: %1$s</string>
+    <plurals name="mcp_status_connected">
+        <item quantity="one">Подключён · %1$d инструмент</item>
+        <item quantity="few">Подключён · %1$d инструмента</item>
+        <item quantity="many">Подключён · %1$d инструментов</item>
+        <item quantity="other">Подключён · %1$d инструмента</item>
+    </plurals>
+    <string name="mcp_test_ok">Подключение есть (протокол %1$s). Инструменты: %2$s</string>
+    <string name="mcp_test_ok_empty">Подключение есть (протокол %1$s), но сервер не предлагает инструментов.</string>
+    <string name="mcp_delete_title">Удалить этот сервер?</string>
+</resources>
