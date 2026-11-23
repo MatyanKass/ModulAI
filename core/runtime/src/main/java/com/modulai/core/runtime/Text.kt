@@ -2,7 +2,10 @@ package com.modulai.core.runtime
 
 import kotlinx.coroutines.flow.Flow
 
-enum class Role(val wire: String) { SYSTEM("system"), USER("user"), ASSISTANT("assistant") }
+enum class Role(val wire: String) { SYSTEM("system"), USER("user"), ASSISTANT("assistant"), TOOL("tool") }
+
+/** A function the model may call. [parametersSchema] is a JSON Schema object as text. */
+data class ToolSpec(val name: String, val description: String, val parametersSchema: String)
 
 data class ChatMessage(val role: Role, val content: String)
 
@@ -35,6 +38,8 @@ enum class StopReason { END, LENGTH, CANCELLED }
 sealed interface TextEvent {
     /** A piece of generated text, roughly one token. */
     data class Piece(val text: String) : TextEvent
+    /** The model asked to run a tool; arrives after all the text, before [Done]. */
+    data class ToolCall(val name: String, val argumentsJson: String) : TextEvent
     data class Done(val reason: StopReason) : TextEvent
 }
 
@@ -45,13 +50,17 @@ interface TextSession : Session {
     val contextTokens: Int
 
     /** Tokens the rendered prompt for [messages] would take. */
-    suspend fun countTokens(messages: List<ChatMessage>, effort: Effort): Int
+    suspend fun countTokens(messages: List<ChatMessage>, effort: Effort, tools: List<ToolSpec> = emptyList()): Int
 
     /**
      * Streams a reply to the whole conversation. Cancelling the collector stops generation.
      * Fails with [PromptTooLongException] when [messages] do not fit; see [fitToContext].
      */
-    fun generate(messages: List<ChatMessage>, params: SamplingParams): Flow<TextEvent>
+    fun generate(
+        messages: List<ChatMessage>,
+        params: SamplingParams,
+        tools: List<ToolSpec> = emptyList(),
+    ): Flow<TextEvent>
 }
 
 /**
@@ -62,9 +71,10 @@ suspend fun TextSession.fitToContext(
     messages: List<ChatMessage>,
     effort: Effort,
     reserve: Int = contextTokens / 4,
+    tools: List<ToolSpec> = emptyList(),
 ): List<ChatMessage> {
     var current = messages
-    while (countTokens(current, effort) > contextTokens - reserve) {
+    while (countTokens(current, effort, tools) > contextTokens - reserve) {
         val drop = current.indexOfFirst { it.role != Role.SYSTEM }
         if (drop < 0 || drop == current.lastIndex) break
         current = current.filterIndexed { i, _ -> i != drop }

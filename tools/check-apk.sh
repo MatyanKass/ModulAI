@@ -15,13 +15,15 @@ fail=0
 unzip -l "$APK" | grep -q 'lib/arm64-v8a/libggml-cpu' \
     || { echo "FAIL no ggml CPU backend library in the APK"; fail=1; }
 
-# The JNI bridge calls PieceCallback.onPiece by name; the shrinker must keep it.
+# The JNI bridge calls the PieceCallback methods by name; the shrinker must keep them.
 unzip -q -o "$APK" 'classes*.dex' -d "$TMP"
-found=0
-for dex in "$TMP"/classes*.dex; do
-    if "$BT/dexdump" "$dex" 2>/dev/null | grep -q "name          : 'onPiece'"; then found=1; fi
+for method in onPiece onToolCall; do
+    found=0
+    for dex in "$TMP"/classes*.dex; do
+        if "$BT/dexdump" "$dex" 2>/dev/null | grep -q "name          : '$method'"; then found=1; fi
+    done
+    [ "$found" = 1 ] || { echo "FAIL PieceCallback.$method was renamed or removed"; fail=1; }
 done
-[ "$found" = 1 ] || { echo "FAIL PieceCallback.onPiece was renamed or removed"; fail=1; }
 
 [ "$fail" = 0 ] && echo "APK checks passed"
 exit $fail

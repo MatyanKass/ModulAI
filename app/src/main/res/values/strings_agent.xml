@@ -1,0 +1,26 @@
+<resources>
+    <string name="workspace_title">Workspace log</string>
+    <string name="workspace_empty">Nothing yet. Tool calls, searches and pages the model reads show up here.</string>
+    <string name="log_thought">Thought</string>
+    <string name="log_tool_call">Tool call</string>
+    <string name="log_tool_result">Tool result</string>
+    <string name="log_search">Search</string>
+    <string name="log_page">Page</string>
+    <string name="log_note">Note</string>
+    <string name="log_error">Error</string>
+    <string name="chats_title">Chats</string>
+    <string name="chats_empty">No saved chats yet.</string>
+    <string name="chat_used_tool">Used a tool — see the workspace log</string>
+    <string name="set_web_tools">Web tools</string>
+    <string name="set_web_tools_hint">The model can search the web, open pages and start research when it decides it needs to. Works with models that support tool calling.</string>
+    <string name="research_topic">What to find out</string>
+    <string name="research_start">Start research</string>
+    <string name="research_quick">Quick · %1$d pages</string>
+    <string name="research_normal">Normal · %1$d pages</string>
+    <string name="research_deep">Deep · %1$d pages</string>
+    <string name="research_planning">Planning the search…</string>
+    <string name="research_searching">Searching: %1$s</string>
+    <string name="research_reading">Reading pages: %1$d of %2$d</string>
+    <string name="research_writing">Writing the report…</string>
+    <string name="research_sources">Sources</string>
+</resources>

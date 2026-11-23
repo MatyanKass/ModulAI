@@ -17,8 +17,8 @@ public class LlamaNative {
     public native void free(long h);
     public native int contextSize(long h);
     public native void cancel(long h);
-    public native int countTokens(long h, String[] roles, String[] contents, boolean thinking);
-    public native int generate(long h, String[] roles, String[] contents, float temp, float topP, int topK,
+    public native int countTokens(long h, String[] roles, String[] contents, String[] tools, boolean thinking);
+    public native int generate(long h, String[] roles, String[] contents, String[] tools, float temp, float topP, int topK,
         float minP, float rep, int maxTokens, int seed, boolean thinking, int budget, PieceCallback cb);
 
     static int pieces;
@@ -26,13 +26,32 @@ public class LlamaNative {
     static double seconds;
     static long firstPieceAt;
 
+    static final String[] NO_TOOLS = {};
+    static final String[] SEARCH_TOOL = {
+        "web_search", "Search the web and return result titles, links and snippets.",
+        "{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\",\"description\":\"Search query\"}},\"required\":[\"query\"]}",
+    };
+    static java.util.List<String> toolCalls = new java.util.ArrayList<>();
+
     static String run(LlamaNative n, long h, String[] r, String[] c, int max, boolean think, int budget, int[] code) {
+        return run(n, h, r, c, NO_TOOLS, max, think, budget, code);
+    }
+
+    static String run(LlamaNative n, long h, String[] r, String[] c, String[] tools, int max, boolean think,
+            int budget, int[] code) {
         StringBuilder sb = new StringBuilder();
         pieces = 0;
         firstPieceAt = 0;
-        code[0] = n.generate(h, r, c, 0.7f, 0.95f, 40, 0.05f, 1.1f, max, 1, think, budget, b -> {
-            if (pieces++ == 0) firstPieceAt = System.nanoTime();
-            sb.append(new String(b, StandardCharsets.UTF_8));
+        toolCalls.clear();
+        code[0] = n.generate(h, r, c, tools, 0.7f, 0.95f, 40, 0.05f, 1.1f, max, 1, think, budget, new PieceCallback() {
+            public void onPiece(byte[] b) {
+                if (pieces++ == 0) firstPieceAt = System.nanoTime();
+                sb.append(new String(b, StandardCharsets.UTF_8));
+            }
+
+            public void onToolCall(byte[] name, byte[] args) {
+                toolCalls.add(new String(name, StandardCharsets.UTF_8) + " " + new String(args, StandardCharsets.UTF_8));
+            }
         });
         seconds = firstPieceAt == 0 ? 0 : (System.nanoTime() - firstPieceAt) / 1e9;
         return sb.toString();
@@ -65,7 +84,7 @@ public class LlamaNative {
 
         String[] r1 = {"system", "user"};
         String[] c1 = {"You are a helpful assistant.", "Привет! Tell me one sentence about cats 😀"};
-        int n1 = n.countTokens(h, r1, c1, false);
+        int n1 = n.countTokens(h, r1, c1, NO_TOOLS, false);
         check(n1 > 10 && n1 < 100, "countTokens = " + n1);
 
         String out1 = run(n, h, r1, c1, 40, false, 0, code);
@@ -110,6 +129,22 @@ public class LlamaNative {
             check(s >= 0 && e > s && out.substring(e + 8).trim().length() > 0, "budget " + budget + ": block closed, answer follows");
         }
         check(run(n, q, rq, new String[]{"What is 17 * 3?"}, 60, true, 0, code).contains("<think>"), "unlimited thinking");
+
+        int plain = n.countTokens(q, rq, new String[]{"Hi"}, NO_TOOLS, false);
+        int withTool = n.countTokens(q, rq, new String[]{"Hi"}, SEARCH_TOOL, false);
+        check(withTool > plain + 20, "tool definitions reach the prompt (" + plain + " -> " + withTool + " tokens)");
+        String call = run(n, q, rq, new String[]{"Search the web for the weather in Paris today."}, SEARCH_TOOL, 200, false, 0, code);
+        show(call);
+        System.out.println("  tool calls: " + toolCalls);
+        check(toolCalls.size() == 1 && toolCalls.get(0).startsWith("web_search ") && toolCalls.get(0).contains("\"query\""),
+            "model calls web_search with a query");
+        String[] rt = {"user", "assistant", "tool"};
+        String[] ct = {"Search the web for the weather in Paris today.", call, "Paris: 18 C, light rain, wind 10 km/h."};
+        String answer = run(n, q, rt, ct, SEARCH_TOOL, 200, false, 0, code);
+        show(answer);
+        check(toolCalls.isEmpty() && answer.contains("18"), "tool result is used in the final answer");
+        check(run(n, q, rq, new String[]{"Say hello."}, SEARCH_TOOL, 60, false, 0, code).length() > 0 && toolCalls.isEmpty(),
+            "no tool call when none is needed");
         n.free(q);
 
         long tiny = n.load(a[1] + "/qwen.gguf", 256, threads, 0, false, true);

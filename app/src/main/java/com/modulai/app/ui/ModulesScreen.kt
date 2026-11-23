@@ -37,13 +37,14 @@ private data class ModuleCard(
     @StringRes val title: Int,
     @StringRes val desc: Int,
     val icon: ImageVector,
-    val ready: Boolean = false,
+    /** Navigation route; null until the module exists. */
+    val route: String? = null,
 )
 
 private val modules = listOf(
-    ModuleCard(R.string.mod_chat, R.string.mod_chat_desc, Icons.Outlined.Chat, ready = true),
+    ModuleCard(R.string.mod_chat, R.string.mod_chat_desc, Icons.Outlined.Chat, CHAT_ROUTE),
     ModuleCard(R.string.mod_rp, R.string.mod_rp_desc, Icons.Outlined.TheaterComedy),
-    ModuleCard(R.string.mod_research, R.string.mod_research_desc, Icons.Outlined.TravelExplore),
+    ModuleCard(R.string.mod_research, R.string.mod_research_desc, Icons.Outlined.TravelExplore, RESEARCH_ROUTE),
     ModuleCard(R.string.mod_code, R.string.mod_code_desc, Icons.Outlined.Code),
     ModuleCard(R.string.mod_image, R.string.mod_image_desc, Icons.Outlined.Image),
     ModuleCard(R.string.mod_audio, R.string.mod_audio_desc, Icons.Outlined.GraphicEq),
@@ -52,7 +53,7 @@ private val modules = listOf(
 )
 
 @Composable
-fun ModulesScreen(onOpenChat: () -> Unit) {
+fun ModulesScreen(onOpen: (String) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(160.dp),
         modifier = Modifier.fillMaxSize(),
@@ -61,9 +62,9 @@ fun ModulesScreen(onOpenChat: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(modules) { module ->
-            // Chat is the only module wired up so far; the rest open as stages land.
+            val route = module.route
             ElevatedCard(
-                modifier = if (module.ready) Modifier.clickable(onClick = onOpenChat) else Modifier.alpha(0.6f),
+                modifier = if (route != null) Modifier.clickable { onOpen(route) } else Modifier.alpha(0.6f),
             ) {
                 Column(Modifier.padding(16.dp)) {
                     Icon(module.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
@@ -74,7 +75,7 @@ fun ModulesScreen(onOpenChat: () -> Unit) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    if (!module.ready) {
+                    if (route == null) {
                         Spacer(Modifier.height(12.dp))
                         Text(
                             stringResource(R.string.soon),

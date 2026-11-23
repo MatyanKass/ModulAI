@@ -120,10 +120,31 @@ struct Rendered {
     std::vector<llama_token> tokens;
     common_chat_params params;
     bool open_thinking = false; // the prompt itself already opened a thinking block
+    bool has_tools = false;
 };
 
-bool render(JNIEnv * env, Session * s, jobjectArray roles, jobjectArray contents, bool thinking, Rendered & out) {
+jbyteArray to_bytes(JNIEnv * env, const std::string & text) {
+    jbyteArray arr = env->NewByteArray((jsize) text.size());
+    env->SetByteArrayRegion(arr, 0, (jsize) text.size(), (const jbyte *) text.data());
+    return arr;
+}
+
+bool render(JNIEnv * env, Session * s, jobjectArray roles, jobjectArray contents, jobjectArray tools,
+            bool thinking, Rendered & out) {
     common_chat_templates_inputs inputs;
+    // Tools arrive flattened as [name, description, JSON schema, name, ...].
+    const jsize n_tools = tools ? env->GetArrayLength(tools) / 3 : 0;
+    for (jsize i = 0; i < n_tools; i++) {
+        common_chat_tool tool;
+        std::string * fields[3] = {&tool.name, &tool.description, &tool.parameters};
+        for (int f = 0; f < 3; f++) {
+            auto js = (jstring) env->GetObjectArrayElement(tools, i * 3 + f);
+            *fields[f] = to_string(env, js);
+            env->DeleteLocalRef(js);
+        }
+        inputs.tools.push_back(std::move(tool));
+    }
+    out.has_tools = n_tools > 0;
     const jsize n = env->GetArrayLength(roles);
     for (jsize i = 0; i < n; i++) {
         auto role = (jstring) env->GetObjectArrayElement(roles, i);
@@ -278,15 +299,16 @@ Java_com_modulai_engine_llamacpp_LlamaNative_cancel(JNIEnv *, jobject, jlong han
 
 JNIEXPORT jint JNICALL
 Java_com_modulai_engine_llamacpp_LlamaNative_countTokens(
-        JNIEnv * env, jobject, jlong handle, jobjectArray roles, jobjectArray contents, jboolean thinking) {
+        JNIEnv * env, jobject, jlong handle, jobjectArray roles, jobjectArray contents, jobjectArray tools,
+        jboolean thinking) {
     Rendered r;
-    if (!render(env, (Session *) handle, roles, contents, thinking, r)) return ERR_TEMPLATE;
+    if (!render(env, (Session *) handle, roles, contents, tools, thinking, r)) return ERR_TEMPLATE;
     return (jint) r.tokens.size();
 }
 
 JNIEXPORT jint JNICALL
 Java_com_modulai_engine_llamacpp_LlamaNative_generate(
-        JNIEnv * env, jobject, jlong handle, jobjectArray roles, jobjectArray contents,
+        JNIEnv * env, jobject, jlong handle, jobjectArray roles, jobjectArray contents, jobjectArray tools,
         jfloat temperature, jfloat topP, jint topK, jfloat minP, jfloat repeatPenalty,
         jint maxTokens, jint seed, jboolean thinking, jint thinkingBudget, jobject callback) {
     auto * s = (Session *) handle;
@@ -301,7 +323,7 @@ Java_com_modulai_engine_llamacpp_LlamaNative_generate(
     }
 
     Rendered r;
-    if (!render(env, s, roles, contents, thinking, r)) return ERR_TEMPLATE;
+    if (!render(env, s, roles, contents, tools, thinking, r)) return ERR_TEMPLATE;
 
     const int n_ctx = (int) llama_n_ctx(s->ctx);
     if ((int) r.tokens.size() + 8 > n_ctx) return ERR_PROMPT_TOO_LONG;
@@ -407,6 +429,27 @@ Java_com_modulai_engine_llamacpp_LlamaNative_generate(
     }
 
     common_sampler_free(sampler);
+
+    // Let llama.cpp's per-template parser extract tool calls; every model family
+    // marks them up differently.
+    if (r.has_tools && result >= 0 && result != STOP_CANCELLED) {
+        try {
+            common_chat_parser_params pp(r.params);
+            pp.parser = r.params.parser;
+            const common_chat_msg msg = common_chat_parse(common_chat_input(output), false, pp);
+            jmethodID onToolCall = env->GetMethodID(cbClass, "onToolCall", "([B[B)V");
+            for (const auto & call : msg.tool_calls) {
+                if (!onToolCall) break;
+                jbyteArray name = to_bytes(env, call.name);
+                jbyteArray args = to_bytes(env, call.arguments);
+                env->CallVoidMethod(callback, onToolCall, name, args);
+                env->DeleteLocalRef(name);
+                env->DeleteLocalRef(args);
+            }
+        } catch (const std::exception & e) {
+            LOGE("could not parse tool calls: %s", e.what());
+        }
+    }
     return result;
 }
 

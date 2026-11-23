@@ -7,6 +7,9 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.modulai.core.agent.HttpWeb
+import com.modulai.core.agent.ResearchDepth
+import com.modulai.core.agent.Web
 import com.modulai.core.device.DeviceInspector
 import com.modulai.core.models.ModelStore
 import com.modulai.core.runtime.Effort
@@ -28,6 +31,8 @@ class AppContainer(private val context: Context) {
     val engines = EngineRegistry().apply { register(LlamaCppEngine(context)) }
     val device = DeviceInspector(context)
     val models = ModelStore(context)
+    val chats = ChatStore(java.io.File(context.filesDir, "chats"))
+    val web: Web = HttpWeb()
 
     val ageConfirmed: Flow<Boolean> = context.settings.data.map { it[AGE_CONFIRMED] ?: false }
 
@@ -42,10 +47,14 @@ class AppContainer(private val context: Context) {
             useMmap = p[MMAP] ?: d.useMmap,
             temperature = p[TEMPERATURE] ?: d.temperature,
             systemPrompt = p[SYSTEM_PROMPT] ?: d.systemPrompt,
+            webTools = p[WEB_TOOLS] ?: d.webTools,
+            researchDepth = p[RESEARCH_DEPTH]?.let { name -> ResearchDepth.entries.find { it.name == name } }
+                ?: d.researchDepth,
         )
     }.stateIn(scope, SharingStarted.Eagerly, RunSettings(threads = defaultThreads()))
 
     val chat = ChatController(this)
+    val research = ResearchController(this)
     val downloads = ModelDownloads(this)
 
     suspend fun confirmAge() {
@@ -62,6 +71,8 @@ class AppContainer(private val context: Context) {
             it[MMAP] = s.useMmap
             it[TEMPERATURE] = s.temperature
             it[SYSTEM_PROMPT] = s.systemPrompt
+            it[WEB_TOOLS] = s.webTools
+            it[RESEARCH_DEPTH] = s.researchDepth.name
         }
     }
 
@@ -81,5 +92,7 @@ class AppContainer(private val context: Context) {
         val MMAP = booleanPreferencesKey("mmap")
         val TEMPERATURE = floatPreferencesKey("temperature")
         val SYSTEM_PROMPT = stringPreferencesKey("system_prompt")
+        val WEB_TOOLS = booleanPreferencesKey("web_tools")
+        val RESEARCH_DEPTH = stringPreferencesKey("research_depth")
     }
 }

@@ -15,6 +15,7 @@ import com.modulai.core.runtime.SamplingParams
 import com.modulai.core.runtime.StopReason
 import com.modulai.core.runtime.TextEvent
 import com.modulai.core.runtime.TextSession
+import com.modulai.core.runtime.ToolSpec
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose
@@ -68,19 +69,36 @@ private class LlamaSession(
     override val backend = Backend.CPU
     override val contextTokens = LlamaNative.contextSize(handle)
 
-    override suspend fun countTokens(messages: List<ChatMessage>, effort: Effort): Int = withContext(dispatcher) {
-        val n = LlamaNative.countTokens(handle, messages.roles(), messages.contents(), effort.thinking)
+    override suspend fun countTokens(
+        messages: List<ChatMessage>,
+        effort: Effort,
+        tools: List<ToolSpec>,
+    ): Int = withContext(dispatcher) {
+        val n = LlamaNative.countTokens(handle, messages.roles(), messages.contents(), tools.flat(), effort.thinking)
         if (n < 0) throw GenerationException("Chat template failed")
         n
     }
 
-    override fun generate(messages: List<ChatMessage>, params: SamplingParams): Flow<TextEvent> = callbackFlow {
+    override fun generate(
+        messages: List<ChatMessage>,
+        params: SamplingParams,
+        tools: List<ToolSpec>,
+    ): Flow<TextEvent> = callbackFlow {
         val job = launch(dispatcher) {
             val code = LlamaNative.generate(
-                handle, messages.roles(), messages.contents(),
+                handle, messages.roles(), messages.contents(), tools.flat(),
                 params.temperature, params.topP, params.topK, params.minP, params.repeatPenalty,
                 params.maxTokens, params.seed, params.effort.thinking, params.effort.thinkingBudget,
-            ) { bytes -> trySend(TextEvent.Piece(String(bytes, Charsets.UTF_8))) }
+                object : PieceCallback {
+                    override fun onPiece(utf8: ByteArray) {
+                        trySend(TextEvent.Piece(String(utf8, Charsets.UTF_8)))
+                    }
+
+                    override fun onToolCall(name: ByteArray, argumentsJson: ByteArray) {
+                        trySend(TextEvent.ToolCall(String(name, Charsets.UTF_8), String(argumentsJson, Charsets.UTF_8)))
+                    }
+                },
+            )
             when (code) {
                 LlamaNative.STOP_EOS -> trySend(TextEvent.Done(StopReason.END))
                 LlamaNative.STOP_LENGTH -> trySend(TextEvent.Done(StopReason.LENGTH))
@@ -106,4 +124,14 @@ private class LlamaSession(
 
     private fun List<ChatMessage>.roles() = Array(size) { this[it].role.wire }
     private fun List<ChatMessage>.contents() = Array(size) { this[it].content }
+
+    /** The JNI side expects [name, description, schema, name, ...]. */
+    private fun List<ToolSpec>.flat() = Array(size * 3) {
+        val tool = this[it / 3]
+        when (it % 3) {
+            0 -> tool.name
+            1 -> tool.description
+            else -> tool.parametersSchema
+        }
+    }
 }

@@ -27,9 +27,10 @@ class TextTest {
     private class WordSession(override val contextTokens: Int) : TextSession {
         override val model get() = error("unused")
         override val backend = Backend.CPU
-        override suspend fun countTokens(messages: List<ChatMessage>, effort: Effort) =
+        override suspend fun countTokens(messages: List<ChatMessage>, effort: Effort, tools: List<ToolSpec>) =
             messages.sumOf { it.content.split(' ').size + 2 }
-        override fun generate(messages: List<ChatMessage>, params: SamplingParams): Flow<TextEvent> = emptyFlow()
+        override fun generate(messages: List<ChatMessage>, params: SamplingParams, tools: List<ToolSpec>): Flow<TextEvent> =
+            emptyFlow()
         override fun close() = Unit
     }
 

@@ -1,0 +1,26 @@
+<resources>
+    <string name="workspace_title">Журнал среды</string>
+    <string name="workspace_empty">Пока пусто. Здесь появляются вызовы инструментов, поисковые запросы и страницы, которые читает модель.</string>
+    <string name="log_thought">Мысль</string>
+    <string name="log_tool_call">Вызов инструмента</string>
+    <string name="log_tool_result">Результат инструмента</string>
+    <string name="log_search">Поиск</string>
+    <string name="log_page">Страница</string>
+    <string name="log_note">Заметка</string>
+    <string name="log_error">Ошибка</string>
+    <string name="chats_title">Чаты</string>
+    <string name="chats_empty">Сохранённых чатов пока нет.</string>
+    <string name="chat_used_tool">Использовал инструмент — см. журнал среды</string>
+    <string name="set_web_tools">Веб-инструменты</string>
+    <string name="set_web_tools_hint">Модель сама ищет в интернете, открывает страницы и запускает исследование, когда считает нужным. Работает с моделями, которые умеют вызывать инструменты.</string>
+    <string name="research_topic">Что нужно выяснить</string>
+    <string name="research_start">Начать исследование</string>
+    <string name="research_quick">Быстро · %1$d стр.</string>
+    <string name="research_normal">Обычно · %1$d стр.</string>
+    <string name="research_deep">Глубоко · %1$d стр.</string>
+    <string name="research_planning">Планирую поиск…</string>
+    <string name="research_searching">Ищу: %1$s</string>
+    <string name="research_reading">Читаю страницы: %1$d из %2$d</string>
+    <string name="research_writing">Пишу отчёт…</string>
+    <string name="research_sources">Источники</string>
+</resources>

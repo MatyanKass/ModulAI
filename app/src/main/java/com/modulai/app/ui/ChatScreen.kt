@@ -22,6 +22,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.AddComment
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material.icons.outlined.Stop
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Button
@@ -63,11 +65,15 @@ fun ChatScreen(container: AppContainer, onBack: () -> Unit, onPickModel: () -> U
     val state by container.chat.state.collectAsState()
     var input by rememberSaveable { mutableStateOf("") }
     var showSettings by rememberSaveable { mutableStateOf(false) }
+    var showLog by rememberSaveable { mutableStateOf(false) }
+    var showChats by rememberSaveable { mutableStateOf(false) }
+    // Tool results are for the model; the workspace sheet shows them to the curious.
+    val visible = state.messages.filter { it.role != Role.TOOL }
     val listState = rememberLazyListState()
 
     // Follow the reply while it streams.
-    LaunchedEffect(state.messages.size, state.messages.lastOrNull()?.content?.length) {
-        if (state.messages.isNotEmpty()) listState.scrollToItem(state.messages.lastIndex, Int.MAX_VALUE)
+    LaunchedEffect(visible.size, visible.lastOrNull()?.content?.length) {
+        if (visible.isNotEmpty()) listState.scrollToItem(visible.lastIndex, Int.MAX_VALUE)
     }
 
     Scaffold(
@@ -77,7 +83,7 @@ fun ChatScreen(container: AppContainer, onBack: () -> Unit, onPickModel: () -> U
                 title = {
                     Column {
                         Text(
-                            state.model?.id ?: stringResource(R.string.chat_no_model),
+                            state.chat.characterName ?: state.model?.id ?: stringResource(R.string.chat_no_model),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             style = MaterialTheme.typography.titleMedium,
@@ -99,8 +105,14 @@ fun ChatScreen(container: AppContainer, onBack: () -> Unit, onPickModel: () -> U
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showChats = true }) {
+                        Icon(Icons.Outlined.History, stringResource(R.string.chats_title))
+                    }
                     IconButton(onClick = { container.chat.newChat() }) {
                         Icon(Icons.Outlined.AddComment, stringResource(R.string.chat_new))
+                    }
+                    IconButton(onClick = { showLog = true }) {
+                        Icon(Icons.Outlined.Terminal, stringResource(R.string.workspace_title))
                     }
                     IconButton(onClick = { showSettings = true }) {
                         Icon(Icons.Outlined.Tune, stringResource(R.string.settings))
@@ -170,14 +182,16 @@ fun ChatScreen(container: AppContainer, onBack: () -> Unit, onPickModel: () -> U
                 contentPadding = PaddingValues(12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                itemsIndexed(state.messages) { index, message ->
-                    Bubble(message, streaming = state.generating && index == state.messages.lastIndex)
+                itemsIndexed(visible) { index, message ->
+                    Bubble(message, streaming = state.generating && index == visible.lastIndex)
                 }
             }
         }
     }
 
     if (showSettings) RunSettingsSheet(container, onDismiss = { showSettings = false })
+    if (showLog) WorkspaceSheet(container.chat.log, onDismiss = { showLog = false })
+    if (showChats) ChatListSheet(container, onDismiss = { showChats = false })
 }
 
 @Composable
@@ -192,6 +206,9 @@ private fun Notice(text: String, isError: Boolean = false, onClick: (() -> Unit)
         color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
     )
 }
+
+/** Tool-call markup the model writes; the call itself is shown in the workspace sheet. */
+private val TOOL_CALL = Regex("""<tool_call>.*?(</tool_call>|$)""", RegexOption.DOT_MATCHES_ALL)
 
 @Composable
 private fun Bubble(message: ChatMessage, streaming: Boolean) {
@@ -212,11 +229,16 @@ private fun Bubble(message: ChatMessage, streaming: Boolean) {
                 SelectionContainer { Text(message.content) }
             } else {
                 val parsed = parseReply(message.content)
+                val answer = TOOL_CALL.replace(parsed.answer, "").trim()
                 if (parsed.thinking.isNotEmpty()) Thinking(parsed.thinking, open = parsed.thinkingOpen)
-                if (parsed.answer.isNotEmpty()) {
-                    SelectionContainer { Text(parsed.answer) }
-                } else if (streaming && parsed.thinking.isEmpty()) {
-                    Text("…")
+                when {
+                    answer.isNotEmpty() -> SelectionContainer { Text(answer) }
+                    answer != parsed.answer.trim() -> Text(
+                        stringResource(R.string.chat_used_tool),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.tertiary,
+                    )
+                    streaming && parsed.thinking.isEmpty() -> Text("…")
                 }
             }
         }

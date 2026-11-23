@@ -1,0 +1,657 @@
+{
+  "version": 1,
+  "models": [
+    {
+      "id": "qwen3-5-0-8b-q8",
+      "name": "Qwen3.5 0.8B",
+      "category": "chat",
+      "repo": "unsloth/Qwen3.5-0.8B-GGUF",
+      "file": "Qwen3.5-0.8B-Q8_0.gguf",
+      "sizeBytes": 811843840,
+      "params": "0.8B",
+      "quant": "Q8_0",
+      "minRamGb": 4,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Самая лёгкая модель в каталоге: отвечает почти мгновенно, годится для коротких вопросов и простых переформулировок. В сложных темах часто ошибается.",
+        "en": "The lightest model in the catalog: replies almost instantly and suits short questions and simple rewrites. Often wrong on harder topics."
+      }
+    },
+    {
+      "id": "lfm2-5-1-2b-q6",
+      "name": "LFM2.5 1.2B",
+      "category": "chat",
+      "repo": "LiquidAI/LFM2.5-1.2B-Instruct-GGUF",
+      "file": "LFM2.5-1.2B-Instruct-Q6_K.gguf",
+      "sizeBytes": 962843456,
+      "params": "1.2B",
+      "quant": "Q6_K",
+      "minRamGb": 4,
+      "languages": [
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": false,
+      "tools": true,
+      "description": {
+        "ru": "Маленькая модель, рассчитанная на работу на устройстве: очень быстрая на процессоре телефона. Лучше всего работает на английском, по качеству уступает моделям на 4B.",
+        "en": "A small model designed for on-device use: very fast on a phone CPU. Works best in English and is weaker than 4B models."
+      }
+    },
+    {
+      "id": "qwen3-5-2b-q6",
+      "name": "Qwen3.5 2B",
+      "category": "chat",
+      "repo": "unsloth/Qwen3.5-2B-GGUF",
+      "file": "Qwen3.5-2B-Q6_K.gguf",
+      "sizeBytes": 1574961408,
+      "params": "2B",
+      "quant": "Q6_K",
+      "minRamGb": 6,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Быстрый помощник для повседневных вопросов, понимает русский. Хороший выбор, если важнее скорость, чем глубина ответа.",
+        "en": "A fast assistant for everyday questions with usable Russian. A good pick when speed matters more than depth."
+      }
+    },
+    {
+      "id": "llama-3-2-3b-q4km",
+      "name": "Llama 3.2 3B",
+      "category": "chat",
+      "repo": "bartowski/Llama-3.2-3B-Instruct-GGUF",
+      "file": "Llama-3.2-3B-Instruct-Q4_K_M.gguf",
+      "sizeBytes": 2019377696,
+      "params": "3B",
+      "quant": "Q4_K_M",
+      "minRamGb": 6,
+      "languages": [
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": false,
+      "tools": true,
+      "description": {
+        "ru": "Компактная модель от Meta с ровным английским и быстрыми ответами. Русский понимает слабо.",
+        "en": "A compact Meta model with steady English and quick replies. Weak in Russian."
+      }
+    },
+    {
+      "id": "phi-4-mini-q4km",
+      "name": "Phi-4 mini",
+      "category": "chat",
+      "repo": "unsloth/Phi-4-mini-instruct-GGUF",
+      "file": "Phi-4-mini-instruct-Q4_K_M.gguf",
+      "sizeBytes": 2491874272,
+      "params": "3.8B",
+      "quant": "Q4_K_M",
+      "minRamGb": 6,
+      "languages": [
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": false,
+      "tools": true,
+      "description": {
+        "ru": "Модель Microsoft на 3.8B, сильна в логике и задачах с рассуждением. В основном для английского, скорость на телефоне средняя.",
+        "en": "Microsoft's 3.8B model, good at logic and reasoning tasks. Mostly for English; medium speed on a phone."
+      }
+    },
+    {
+      "id": "qwen3-5-4b-q4km",
+      "name": "Qwen3.5 4B",
+      "category": "chat",
+      "repo": "unsloth/Qwen3.5-4B-GGUF",
+      "file": "Qwen3.5-4B-Q4_K_M.gguf",
+      "sizeBytes": 2740937888,
+      "params": "4B",
+      "quant": "Q4_K_M",
+      "minRamGb": 6,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Основной вариант для телефона с 8–12 ГБ памяти: хороший русский, режим размышлений и вызов инструментов. Разумный баланс скорости и качества.",
+        "en": "The default choice for an 8–12 GB phone: good Russian, a thinking mode and tool calling. A sensible balance of speed and quality."
+      }
+    },
+    {
+      "id": "qvikhr-3-4b-q4km",
+      "name": "QVikhr-3 4B",
+      "category": "chat",
+      "repo": "Vikhrmodels/QVikhr-3-4B-Instruction-GGUF",
+      "file": "QVikhr-3-4B-Instruction-Q4_K_M.gguf",
+      "sizeBytes": 2497281088,
+      "params": "4B",
+      "quant": "Q4_K_M",
+      "minRamGb": 6,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Qwen3 4B, дообученный командой Vikhr на русскоязычных данных. Пишет по-русски естественнее базовой модели при той же скорости.",
+        "en": "Qwen3 4B fine-tuned by the Vikhr team on Russian data. Writes more natural Russian than the base model at the same speed."
+      }
+    },
+    {
+      "id": "gemma-4-e2b-q4km",
+      "name": "Gemma 4 E2B",
+      "category": "chat",
+      "repo": "unsloth/gemma-4-E2B-it-GGUF",
+      "file": "gemma-4-E2B-it-Q4_K_M.gguf",
+      "sizeBytes": 3106738272,
+      "params": "E2B",
+      "quant": "Q4_K_M",
+      "minRamGb": 6,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Младшая Gemma 4 от Google, сделанная для мобильных устройств. Аккуратные ответы на русском и английском, работает быстро.",
+        "en": "The smallest Gemma 4 from Google, built for mobile devices. Tidy answers in Russian and English, and it runs fast."
+      }
+    },
+    {
+      "id": "gemma-4-e4b-q4km",
+      "name": "Gemma 4 E4B",
+      "category": "chat",
+      "repo": "unsloth/gemma-4-E4B-it-GGUF",
+      "file": "gemma-4-E4B-it-Q4_K_M.gguf",
+      "sizeBytes": 4977171584,
+      "params": "E4B",
+      "quant": "Q4_K_M",
+      "minRamGb": 8,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Gemma 4 среднего размера: заметно точнее E2B и хорошо пишет по-русски. На телефоне отвечает медленнее, нужна память от 8 ГБ.",
+        "en": "Mid-size Gemma 4: clearly more accurate than E2B and writes good Russian. Slower on a phone and needs at least 8 GB of RAM."
+      }
+    },
+    {
+      "id": "qwen3-5-9b-q4km",
+      "name": "Qwen3.5 9B",
+      "category": "chat",
+      "repo": "unsloth/Qwen3.5-9B-GGUF",
+      "file": "Qwen3.5-9B-Q4_K_M.gguf",
+      "sizeBytes": 5680522464,
+      "params": "9B",
+      "quant": "Q4_K_M",
+      "minRamGb": 12,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Самый сильный Qwen3.5, который помещается в 12 ГБ памяти. Ответы подробные и точные, но генерация на процессоре идёт медленно.",
+        "en": "The strongest Qwen3.5 that fits in 12 GB of RAM. Detailed, accurate answers, but generation on CPU is slow."
+      }
+    },
+    {
+      "id": "gemma-4-12b-q3km",
+      "name": "Gemma 4 12B",
+      "category": "chat",
+      "repo": "unsloth/gemma-4-12b-it-GGUF",
+      "file": "gemma-4-12b-it-Q3_K_M.gguf",
+      "sizeBytes": 5693872960,
+      "params": "12B",
+      "quant": "Q3_K_M",
+      "minRamGb": 12,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Большая Gemma 4 в сжатии Q3, чтобы уместиться в 12 ГБ. Лучшее качество текста среди обычных моделей каталога, скорость низкая.",
+        "en": "The large Gemma 4 in Q3 quantization so it fits in 12 GB. The best writing quality among the regular models here; slow."
+      }
+    },
+    {
+      "id": "huihui-qwen3-5-4b-abliterated-q4km",
+      "name": "Qwen3.5 4B abliterated",
+      "category": "chat",
+      "repo": "mradermacher/Huihui-Qwen3.5-4B-abliterated-GGUF",
+      "file": "Huihui-Qwen3.5-4B-abliterated.Q4_K_M.gguf",
+      "sizeBytes": 2707514688,
+      "params": "4B",
+      "quant": "Q4_K_M",
+      "minRamGb": 6,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": true,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Qwen3.5 4B с убранными отказами (абляция от huihui-ai). По скорости и качеству как обычная версия, но отвечает на темы, которые та отклоняет.",
+        "en": "Qwen3.5 4B with refusals removed (abliteration by huihui-ai). Same speed and quality as the regular version, but it answers topics the original declines."
+      }
+    },
+    {
+      "id": "huihui-gemma-4-e4b-abliterated-q4km",
+      "name": "Gemma 4 E4B abliterated",
+      "category": "chat",
+      "repo": "mradermacher/Huihui-gemma-4-E4B-it-abliterated-GGUF",
+      "file": "Huihui-gemma-4-E4B-it-abliterated.Q4_K_M.gguf",
+      "sizeBytes": 5335286272,
+      "params": "E4B",
+      "quant": "Q4_K_M",
+      "minRamGb": 8,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": true,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Gemma 4 E4B без отказов (абляция от huihui-ai). Хороший русский и средняя скорость, нужна память от 8 ГБ.",
+        "en": "Gemma 4 E4B without refusals (abliteration by huihui-ai). Good Russian and medium speed; needs at least 8 GB of RAM."
+      }
+    },
+    {
+      "id": "huihui-qwen3-5-9b-abliterated-q4km",
+      "name": "Qwen3.5 9B abliterated",
+      "category": "chat",
+      "repo": "mradermacher/Huihui-Qwen3.5-9B-abliterated-GGUF",
+      "file": "Huihui-Qwen3.5-9B-abliterated.Q4_K_M.gguf",
+      "sizeBytes": 5627045248,
+      "params": "9B",
+      "quant": "Q4_K_M",
+      "minRamGb": 12,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": true,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Старший Qwen3.5 без отказов. Самая способная модель без цензуры для телефона с 12 ГБ памяти, отвечает медленно.",
+        "en": "The larger Qwen3.5 without refusals. The most capable uncensored model for a 12 GB phone; slow to respond."
+      }
+    },
+    {
+      "id": "impish-llama-4b-q4km",
+      "name": "Impish LLAMA 4B",
+      "category": "rp",
+      "repo": "SicariusSicariiStuff/Impish_LLAMA_4B_GGUF",
+      "file": "Impish_LLAMA_V2-Q4_K_M.gguf",
+      "sizeBytes": 2778282656,
+      "params": "4B",
+      "quant": "Q4_K_M",
+      "minRamGb": 6,
+      "languages": [
+        "en"
+      ],
+      "uncensored": true,
+      "thinking": false,
+      "tools": false,
+      "description": {
+        "ru": "Небольшая модель для ролевых игр и приключений без цензуры, только английский. Быстро работает на телефоне, но в длинных сценах теряет детали.",
+        "en": "A small uncensored model for roleplay and adventure, English only. Fast on a phone, but loses details in long scenes."
+      }
+    },
+    {
+      "id": "l3-8b-stheno-v3-2-q4km",
+      "name": "Stheno 8B v3.2",
+      "category": "rp",
+      "repo": "bartowski/L3-8B-Stheno-v3.2-GGUF",
+      "file": "L3-8B-Stheno-v3.2-Q4_K_M.gguf",
+      "sizeBytes": 4920734240,
+      "params": "8B",
+      "quant": "Q4_K_M",
+      "minRamGb": 8,
+      "languages": [
+        "en"
+      ],
+      "uncensored": true,
+      "thinking": false,
+      "tools": false,
+      "description": {
+        "ru": "Известный ролевой файнтюн Llama 3: живые персонажи и диалоги, без цензуры. Только английский, контекст 8 тысяч токенов.",
+        "en": "A well-known Llama 3 roleplay finetune: lively characters and dialogue, uncensored. English only, 8K context."
+      }
+    },
+    {
+      "id": "saiga-yandexgpt-8b-q4km",
+      "name": "Saiga YandexGPT 8B",
+      "category": "rp",
+      "repo": "IlyaGusev/saiga_yandexgpt_8b_gguf",
+      "file": "saiga_yandexgpt_8b.Q4_K_M.gguf",
+      "sizeBytes": 4926289728,
+      "params": "8B",
+      "quant": "Q4_K_M",
+      "minRamGb": 8,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": false,
+      "tools": false,
+      "description": {
+        "ru": "Сайга на основе YandexGPT 5 Lite: модель, изначально обученная на русском. Подходит для диалогов и персонажей на русском при умеренной скорости.",
+        "en": "Saiga built on YandexGPT 5 Lite, a model trained natively on Russian. Suits Russian dialogue and characters at moderate speed."
+      }
+    },
+    {
+      "id": "saiga-nemo-12b-q3km",
+      "name": "Saiga Nemo 12B",
+      "category": "rp",
+      "repo": "IlyaGusev/saiga_nemo_12b_gguf",
+      "file": "saiga_nemo_12b.Q3_K_M.gguf",
+      "sizeBytes": 6083089280,
+      "params": "12B",
+      "quant": "Q3_K_M",
+      "minRamGb": 12,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": false,
+      "tools": false,
+      "description": {
+        "ru": "Русскоязычный файнтюн Mistral Nemo, который часто используют для ролевых диалогов. Грамотный русский и хорошее удержание образа, на телефоне медленный.",
+        "en": "A Russian finetune of Mistral Nemo that is often used for roleplay dialogue. Fluent Russian and good character consistency; slow on a phone."
+      }
+    },
+    {
+      "id": "mn-12b-runeweaver-rp-ru-q3km",
+      "name": "Runeweaver RP RU 12B",
+      "category": "rp",
+      "repo": "limloop/MN-12B-Runeweaver-RP-RU-GGUF",
+      "file": "MN-12B-Runeweaver-RP-RU.Q3_K_M.gguf",
+      "sizeBytes": 6083103072,
+      "params": "12B",
+      "quant": "Q3_K_M",
+      "minRamGb": 12,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": true,
+      "thinking": false,
+      "tools": true,
+      "description": {
+        "ru": "Слияние моделей на Mistral Nemo для ролевых игр на русском, без цензуры. Образный язык и длинные сцены, скорость низкая.",
+        "en": "A merge of Mistral Nemo models for Russian roleplay, uncensored. Vivid prose and long scenes; slow."
+      }
+    },
+    {
+      "id": "mn-12b-mag-mell-r1-q3km",
+      "name": "Mag Mell 12B",
+      "category": "rp",
+      "repo": "bartowski/MN-12B-Mag-Mell-R1-GGUF",
+      "file": "MN-12B-Mag-Mell-R1-Q3_K_M.gguf",
+      "sizeBytes": 6083091424,
+      "params": "12B",
+      "quant": "Q3_K_M",
+      "minRamGb": 12,
+      "languages": [
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": false,
+      "tools": false,
+      "description": {
+        "ru": "Популярное слияние на Mistral Nemo для ролевых игр и художественной прозы на английском. Хорошо держит стиль и характер, отвечает медленно.",
+        "en": "A popular Mistral Nemo merge for English roleplay and fiction. Holds style and character well; slow to respond."
+      }
+    },
+    {
+      "id": "nemomix-unleashed-12b-q4km",
+      "name": "NemoMix Unleashed 12B",
+      "category": "rp",
+      "repo": "bartowski/NemoMix-Unleashed-12B-GGUF",
+      "file": "NemoMix-Unleashed-12B-Q4_K_M.gguf",
+      "sizeBytes": 7477203776,
+      "params": "12B",
+      "quant": "Q4_K_M",
+      "minRamGb": 16,
+      "languages": [
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": false,
+      "tools": false,
+      "description": {
+        "ru": "Слияние на Mistral Nemo для длинных ролевых историй на английском, в более точном сжатии Q4. Только для устройств с 16 ГБ памяти.",
+        "en": "A Mistral Nemo merge for long English roleplay stories, in the more accurate Q4 quantization. Only for devices with 16 GB of RAM."
+      }
+    },
+    {
+      "id": "qwen3-1-7b-q6",
+      "name": "Qwen3 1.7B",
+      "category": "research",
+      "repo": "unsloth/Qwen3-1.7B-GGUF",
+      "file": "Qwen3-1.7B-Q6_K.gguf",
+      "sizeBytes": 1417755200,
+      "params": "1.7B",
+      "quant": "Q6_K",
+      "minRamGb": 4,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Лёгкая модель с режимом размышлений и вызовом инструментов. Подходит для быстрых пересказов и простых цепочек с поиском, в длинных текстах пропускает детали.",
+        "en": "A light model with a thinking mode and tool calling. Fine for quick summaries and simple search chains; misses details in long texts."
+      }
+    },
+    {
+      "id": "jan-nano-4b-q4km",
+      "name": "Jan-nano 4B",
+      "category": "research",
+      "repo": "Menlo/Jan-nano-gguf",
+      "file": "jan-nano-4b-Q4_K_M.gguf",
+      "sizeBytes": 2497280448,
+      "params": "4B",
+      "quant": "Q4_K_M",
+      "minRamGb": 6,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": false,
+      "tools": true,
+      "description": {
+        "ru": "Qwen3 4B, дообученный для исследовательских задач с инструментами: поиск, чтение источников, сбор ответа. Скорость как у обычной модели на 4B.",
+        "en": "Qwen3 4B fine-tuned for research with tools: searching, reading sources and assembling an answer. Same speed as a regular 4B model."
+      }
+    },
+    {
+      "id": "qwen3-4b-instruct-2507-q4km",
+      "name": "Qwen3 4B Instruct 2507",
+      "category": "research",
+      "repo": "unsloth/Qwen3-4B-Instruct-2507-GGUF",
+      "file": "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+      "sizeBytes": 2497281120,
+      "params": "4B",
+      "quant": "Q4_K_M",
+      "minRamGb": 6,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": false,
+      "tools": true,
+      "description": {
+        "ru": "Версия Qwen3 4B без режима размышлений с поддержкой очень длинного контекста. Удобна для пересказа документов и работы с инструментами.",
+        "en": "A Qwen3 4B release without thinking mode that supports very long context. Handy for summarizing documents and working with tools."
+      }
+    },
+    {
+      "id": "qwen3-8b-q4km",
+      "name": "Qwen3 8B",
+      "category": "research",
+      "repo": "unsloth/Qwen3-8B-GGUF",
+      "file": "Qwen3-8B-Q4_K_M.gguf",
+      "sizeBytes": 5027784512,
+      "params": "8B",
+      "quant": "Q4_K_M",
+      "minRamGb": 8,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Точнее моделей на 4B в анализе текста и многошаговых задачах с инструментами, есть режим размышлений. На телефоне работает заметно медленнее.",
+        "en": "More accurate than 4B models at text analysis and multi-step tool tasks, with a thinking mode. Noticeably slower on a phone."
+      }
+    },
+    {
+      "id": "vikhr-nemo-12b-q3km",
+      "name": "Vikhr Nemo 12B",
+      "category": "research",
+      "repo": "bartowski/Vikhr-Nemo-12B-Instruct-R-21-09-24-GGUF",
+      "file": "Vikhr-Nemo-12B-Instruct-R-21-09-24-Q3_K_M.gguf",
+      "sizeBytes": 6083103072,
+      "params": "12B",
+      "quant": "Q3_K_M",
+      "minRamGb": 12,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": false,
+      "tools": true,
+      "description": {
+        "ru": "Русскоязычная модель на Mistral Nemo, обученная отвечать по предоставленным документам. Хороша для пересказа и вопросов по тексту на русском, скорость низкая.",
+        "en": "A Russian-focused Mistral Nemo model trained to answer from supplied documents. Good for summaries and questions over Russian text; slow."
+      }
+    },
+    {
+      "id": "qwen2-5-coder-1-5b-q6",
+      "name": "Qwen2.5 Coder 1.5B",
+      "category": "code",
+      "repo": "bartowski/Qwen2.5-Coder-1.5B-Instruct-GGUF",
+      "file": "Qwen2.5-Coder-1.5B-Instruct-Q6_K.gguf",
+      "sizeBytes": 1272740128,
+      "params": "1.5B",
+      "quant": "Q6_K",
+      "minRamGb": 4,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": false,
+      "tools": true,
+      "description": {
+        "ru": "Маленькая модель для кода: быстрые подсказки, короткие функции, объяснение фрагментов. Для больших задач не хватает точности.",
+        "en": "A small coding model: quick suggestions, short functions and snippet explanations. Not accurate enough for larger tasks."
+      }
+    },
+    {
+      "id": "qwen2-5-coder-3b-q4km",
+      "name": "Qwen2.5 Coder 3B",
+      "category": "code",
+      "repo": "bartowski/Qwen2.5-Coder-3B-Instruct-GGUF",
+      "file": "Qwen2.5-Coder-3B-Instruct-Q4_K_M.gguf",
+      "sizeBytes": 1929903360,
+      "params": "3B",
+      "quant": "Q4_K_M",
+      "minRamGb": 6,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": false,
+      "tools": true,
+      "description": {
+        "ru": "Средний вариант для кода: пишет и исправляет небольшие программы на распространённых языках. Хорошая скорость на телефоне.",
+        "en": "A mid-size coding option: writes and fixes small programs in common languages. Good speed on a phone."
+      }
+    },
+    {
+      "id": "qwen2-5-coder-7b-q4km",
+      "name": "Qwen2.5 Coder 7B",
+      "category": "code",
+      "repo": "bartowski/Qwen2.5-Coder-7B-Instruct-GGUF",
+      "file": "Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf",
+      "sizeBytes": 4683074336,
+      "params": "7B",
+      "quant": "Q4_K_M",
+      "minRamGb": 8,
+      "languages": [
+        "ru",
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": false,
+      "tools": true,
+      "description": {
+        "ru": "Заметно точнее младших версий при написании и разборе кода. Отвечает медленнее, нужна память от 8 ГБ.",
+        "en": "Clearly more accurate than the smaller versions at writing and reviewing code. Slower, and needs at least 8 GB of RAM."
+      }
+    },
+    {
+      "id": "qwen3-5-9b-coder-q4km",
+      "name": "Qwen3.5 9B Coder",
+      "category": "code",
+      "repo": "mradermacher/Qwen3.5-9B-Coder-GGUF",
+      "file": "Qwen3.5-9B-Coder.Q4_K_M.gguf",
+      "sizeBytes": 5780092864,
+      "params": "9B",
+      "quant": "Q4_K_M",
+      "minRamGb": 12,
+      "languages": [
+        "en"
+      ],
+      "uncensored": false,
+      "thinking": true,
+      "tools": true,
+      "description": {
+        "ru": "Файнтюн Qwen3.5 9B от сообщества для программирования и агентных задач с инструментами. Самая способная модель для кода в каталоге, но медленная.",
+        "en": "A community finetune of Qwen3.5 9B for programming and agentic tool use. The most capable coding model in the catalog, but slow."
+      }
+    }
+  ]
+}

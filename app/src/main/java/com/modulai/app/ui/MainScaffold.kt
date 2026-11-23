@@ -24,7 +24,12 @@ import androidx.navigation.compose.rememberNavController
 import com.modulai.app.AppContainer
 import com.modulai.app.R
 
-private const val CHAT_ROUTE = "chat"
+const val CHAT_ROUTE = "chat"
+const val RESEARCH_ROUTE = "research"
+const val RP_ROUTE = "rp"
+
+/** Screens that draw their own top bar and replace the tab bar. */
+private val FULL_SCREEN = setOf(CHAT_ROUTE, RESEARCH_ROUTE, RP_ROUTE)
 
 private enum class Tab(val route: String, @StringRes val label: Int, val icon: ImageVector) {
     MODULES("modules", R.string.tab_modules, Icons.Outlined.Apps),
@@ -39,7 +44,7 @@ fun MainScaffold(container: AppContainer) {
     val route = current?.destination?.route
     Scaffold(
         bottomBar = {
-            if (route != CHAT_ROUTE) NavigationBar {
+            if (route !in FULL_SCREEN) NavigationBar {
                 Tab.entries.forEach { tab ->
                     NavigationBarItem(
                         selected = current?.destination?.route == tab.route,
@@ -62,23 +67,27 @@ fun MainScaffold(container: AppContainer) {
             launchSingleTop = true
             restoreState = true
         }
-        // The chat screen draws its own bars, so it must not get the tab padding.
+        val pickModel = {
+            nav.popBackStack()
+            openTab(Tab.MODELS)
+        }
+        // Full-screen routes draw their own bars, so they must not get the tab padding.
         NavHost(
             nav,
             startDestination = Tab.MODULES.route,
-            modifier = if (route == CHAT_ROUTE) Modifier else Modifier.padding(padding),
+            modifier = if (route in FULL_SCREEN) Modifier else Modifier.padding(padding),
         ) {
-            composable(Tab.MODULES.route) { ModulesScreen(onOpenChat = { nav.navigate(CHAT_ROUTE) }) }
+            composable(Tab.MODULES.route) { ModulesScreen(onOpen = { nav.navigate(it) }) }
+            composable(RESEARCH_ROUTE) {
+                ResearchScreen(container, onBack = { nav.popBackStack() }, onPickModel = pickModel)
+            }
             composable(Tab.MODELS.route) { ModelsScreen(container) }
             composable(Tab.DEVICE.route) { DeviceScreen(container) }
             composable(CHAT_ROUTE) {
                 ChatScreen(
                     container,
                     onBack = { nav.popBackStack() },
-                    onPickModel = {
-                        nav.popBackStack()
-                        openTab(Tab.MODELS)
-                    },
+                    onPickModel = pickModel,
                 )
             }
         }

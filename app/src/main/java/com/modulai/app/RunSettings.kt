@@ -1,5 +1,6 @@
 package com.modulai.app
 
+import com.modulai.core.agent.ResearchDepth
 import com.modulai.core.runtime.Effort
 
 enum class Preset(val contextTokens: Int, val effort: Effort) {
@@ -18,6 +19,9 @@ data class RunSettings(
     val useMmap: Boolean = true,
     val temperature: Float = 0.7f,
     val systemPrompt: String = "",
+    /** Let the chat model search the web, open pages and start research on its own. */
+    val webTools: Boolean = false,
+    val researchDepth: ResearchDepth = ResearchDepth.NORMAL,
 ) {
     fun withPreset(p: Preset) =
         if (p == Preset.CUSTOM) copy(preset = p) else copy(preset = p, contextTokens = p.contextTokens, effort = p.effort)
