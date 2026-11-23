@@ -1,0 +1,73 @@
+<resources>
+    <string name="audio_tab_recognize">Речь → текст</string>
+    <string name="audio_tab_speak">Текст → речь</string>
+    <string name="audio_tab_voices">Голоса</string>
+    <string name="audio_tab_models">Модели</string>
+    <string name="audio_lang_auto">Авто</string>
+    <string name="audio_lang_ru">Русский</string>
+    <string name="audio_lang_en">Английский</string>
+
+    <string name="audio_need_speech_model">Для распознавания речи нужна модель Whisper. Скачайте её на вкладке «Модели».</string>
+    <string name="audio_translate">Переводить на английский</string>
+    <string name="audio_record">Записать</string>
+    <string name="audio_stop_recording">Стоп</string>
+    <string name="audio_from_file">Из файла</string>
+    <string name="audio_listening">Слушаю…</string>
+    <string name="audio_reading_file">Читаю файл…</string>
+    <string name="audio_recognizing">Распознаю…</string>
+    <string name="audio_recognizing_percent">Распознаю… %1$d%%</string>
+    <string name="audio_no_speech_found">В записи не нашлось речи.</string>
+    <string name="audio_file_truncated">Файл длинный: распознаны только первые %1$d мин.</string>
+    <string name="audio_copy">Копировать</string>
+    <string name="audio_share">Поделиться</string>
+
+    <string name="audio_loading_voices">Ищу голоса…</string>
+    <string name="audio_need_voice">Озвучивать пока нечем: на устройстве нет службы синтеза речи, а речевая модель не установлена. Скачайте её на вкладке «Модели».</string>
+    <string name="audio_text_hint">Текст для озвучки</string>
+    <string name="audio_voice">Голос</string>
+    <string name="audio_voice_system_default">Системный голос</string>
+    <string name="audio_voice_system">Системный · %1$s</string>
+    <string name="audio_voice_stock">стандартный голос</string>
+    <string name="audio_voice_cloned">Мой голос · %1$s</string>
+    <string name="audio_only_system_voices">Доступны только голоса самого устройства. Нейросетевые голоса можно скачать на вкладке «Модели».</string>
+    <string name="audio_speed">Скорость: %1$.1f×</string>
+    <string name="audio_speed_fixed">Этот голос говорит в собственном темпе</string>
+    <string name="audio_speak">Озвучить</string>
+    <string name="audio_replay">Повторить</string>
+    <string name="audio_save_wav">Сохранить WAV</string>
+    <string name="audio_saved">Сохранено в Music/ModulAI/%1$s</string>
+    <string name="audio_synthesizing">Готовлю речь…</string>
+
+    <string name="audio_need_cloning_model">Чтобы скопировать голос, нужна модель Chatterbox Multilingual. Скачайте её на вкладке «Модели».</string>
+    <string name="audio_clone_help">Запишите около %1$d секунд чистой речи без музыки и шума или выберите готовую запись. Новый голос появится в списке голосов и сможет говорить на любом языке модели.</string>
+    <string name="audio_clone_consent">Копируйте только свой голос или голос человека, который на это согласился.</string>
+    <string name="audio_voice_name">Название голоса</string>
+    <string name="audio_voice_default_name">Голос %1$d</string>
+    <string name="audio_record_sample">Записать образец</string>
+    <string name="audio_creating_voice">Создаю голос…</string>
+    <string name="audio_no_cloned_voices">Голосов пока нет.</string>
+    <string name="audio_voice_test">Прослушать</string>
+    <string name="audio_voice_test_phrase">Привет! Вот так звучит мой голос.</string>
+    <string name="audio_delete_voice_title">Удалить этот голос?</string>
+
+    <string name="audio_models_recognition">Распознавание речи</string>
+    <string name="audio_models_synthesis">Синтез речи</string>
+    <string name="audio_model_download">Скачать</string>
+    <string name="audio_model_installed">Установлена</string>
+    <string name="audio_import_help">Модель Whisper в виде ggml-файла .bin или архив .zip с файлами речевой модели.</string>
+    <string name="audio_model_whisper_tiny">Самая маленькая и быстрая. Годится для чёткой английской речи, в русской часто ошибается.</string>
+    <string name="audio_model_whisper_base">Быстрая и лёгкая, справляется с чёткой русской и английской речью. Хороший первый выбор.</string>
+    <string name="audio_model_whisper_small">Заметно точнее на русском, в несколько раз медленнее Base.</string>
+    <string name="audio_model_whisper_turbo">Самая точная из списка, для длинных и шумных записей. На телефоне работает медленно.</string>
+    <string name="audio_model_supertonic">Быстрые нейросетевые голоса, 5 женских и 5 мужских, на 31 языке, включая русский и английский. Скорость речи настраивается. Лицензия OpenRAIL-M.</string>
+    <string name="audio_model_chatterbox">Говорит голосом, скопированным с короткой записи, на 20 языках, включая русский и английский. Намного медленнее Supertonic и требует много памяти.</string>
+
+    <string name="audio_err_mic_permission">Нет доступа к микрофону. Разрешите его в настройках приложения.</string>
+    <string name="audio_err_mic_failed">Не удалось включить микрофон. Возможно, он занят другим приложением.</string>
+    <string name="audio_err_nothing_recorded">Ничего не записалось.</string>
+    <string name="audio_err_no_speech_model">Модель распознавания речи не установлена.</string>
+    <string name="audio_err_no_voice">Озвучивать нечем: установите речевую модель.</string>
+    <string name="audio_err_no_cloning_model">Не установлена модель, умеющая копировать голоса.</string>
+    <string name="audio_err_sample_short">Образец слишком короткий: нужно хотя бы 3 секунды речи.</string>
+    <string name="audio_err_unreadable_file">В этом файле нет звука, который устройство может прочитать.</string>
+</resources>
