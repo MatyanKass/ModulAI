@@ -47,6 +47,27 @@ class HfTest {
         assertEquals(listOf(HfFile("m-Q4_K_M.gguf", 4000), HfFile("m-Q8_0.gguf", 8000)), HfApi.parseTree(json))
     }
 
+    @Test fun parsesSearchResults() {
+        // Trimmed from a live answer of /api/models?search=qwen3&filter=gguf&sort=downloads&direction=-1.
+        val json = """
+            [{"_id":"6a7d8038d813eea1a14a8db4","id":"unsloth/Qwen3.8-27B-GGUF","likes":6308,"private":false,
+              "downloads":7683660,"tags":["gguf","unsloth","license:apache-2.0","conversational"],
+              "createdAt":"2026-08-13T08:28:40.000Z","modelId":"unsloth/Qwen3.8-27B-GGUF"},
+             {"_id":"6a9e86d1dab7f88030e2af20","id":"ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF","likes":1327,
+              "private":false,"downloads":7533868,"tags":["gguf"],"pipeline_tag":"image-text-to-text",
+              "library_name":"gguf","createdAt":"2026-09-07T09:41:37.000Z"},
+             {"_id":"x","likes":1}]
+        """
+        assertEquals(
+            listOf(
+                HfRepo("unsloth/Qwen3.8-27B-GGUF", 7683660, 6308),
+                HfRepo("ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF", 7533868, 1327),
+            ),
+            HfApi.parseSearch(json),
+        )
+        assertEquals(emptyList<HfRepo>(), HfApi.parseSearch("[]"))
+    }
+
     @Test fun sanitizesFileNames() {
         assertEquals("a_b.gguf", ModelStore.sanitize("a b.gguf"))
         assertEquals("_etc_passwd", ModelStore.sanitize("../etc/passwd"))

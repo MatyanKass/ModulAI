@@ -1,0 +1,31 @@
+<resources>
+    <string name="models_installed">Мои</string>
+    <string name="models_catalog">Каталог</string>
+    <string name="models_search">Поиск</string>
+    <string name="catalog_all">Все</string>
+    <string name="catalog_other">Другое</string>
+    <string name="catalog_show_uncensored">Показывать модели без цензуры</string>
+    <string name="catalog_empty">Каталог пока пуст. Воспользуйтесь поиском или ссылкой.</string>
+    <string name="catalog_none_match">С такими фильтрами ничего нет.</string>
+    <string name="catalog_download">Скачать</string>
+    <string name="catalog_installed">Установлена</string>
+    <string name="catalog_queued">В очереди</string>
+    <string name="badge_thinking">размышления</string>
+    <string name="badge_tools">инструменты</string>
+    <string name="badge_uncensored">без цензуры</string>
+    <string name="download_waiting">Ждёт своей очереди</string>
+    <string name="download_retry">Повторить</string>
+    <string name="search_hint">Поиск по Hugging Face</string>
+    <string name="search_help">Ищет репозитории с GGUF-моделями. Нажмите на репозиторий, чтобы выбрать файл.</string>
+    <string name="search_empty">Ничего не найдено.</string>
+    <string name="search_stats">Скачиваний: %1$s · лайков: %2$s</string>
+    <string name="hf_token">Токен HF</string>
+    <string name="hf_token_title">Токен Hugging Face</string>
+    <string name="hf_token_body">Некоторые модели можно скачать только после того, как вы примете их условия на Hugging Face. Чтобы скачивать их здесь, создайте токен на huggingface.co/settings/tokens (достаточно доступа на чтение) и вставьте его ниже. Токен хранится только на этом устройстве.</string>
+    <string name="hf_token_hint">Токен</string>
+    <string name="hf_token_save">Сохранить</string>
+    <string name="hf_token_needed">Hugging Face отказал в доступе. Если модель закрытая, примите её условия на сайте и добавьте свой токен.</string>
+    <string name="notif_channel">Загрузка моделей</string>
+    <string name="notif_preparing">Подготовка загрузки…</string>
+    <string name="notif_queue">Ещё в очереди: %1$d</string>
+</resources>
