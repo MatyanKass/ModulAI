@@ -32,6 +32,8 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { compose = true }
+    // The model catalog lives at the repository root so it can also be fetched from GitHub.
+    sourceSets["main"].assets.srcDir("../catalog")
     // llama.cpp dlopen()s its CPU backends by file path, so the libraries have to be
     // extracted on install; by default they stay inside the APK and are never found.
     packaging { jniLibs { useLegacyPackaging = true } }
@@ -41,6 +43,8 @@ dependencies {
     implementation(project(":core:runtime"))
     implementation(project(":core:device"))
     implementation(project(":core:models"))
+    implementation(project(":core:characters"))
+    implementation(project(":core:agent"))
     implementation(project(":engines:llm-llamacpp"))
 
     implementation(platform(libs.compose.bom))
