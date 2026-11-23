@@ -1,33 +1,43 @@
 package com.modulai.app.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.text.format.Formatter
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SecondaryTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,32 +45,73 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.modulai.app.AppContainer
+import com.modulai.app.DownloadItem
+import com.modulai.app.DownloadState
+import com.modulai.app.ModelPrefs
 import com.modulai.app.R
-import com.modulai.core.models.HfApi
-import com.modulai.core.models.HfFile
+import com.modulai.core.models.Catalog
+import com.modulai.core.models.CatalogRepository
 import com.modulai.core.models.HfLink
+import com.modulai.core.models.RamFit
+import com.modulai.core.models.ramFit
 import com.modulai.core.runtime.ModelDescriptor
 import kotlinx.coroutines.launch
+import java.io.File
 
+private enum class Section(@StringRes val label: Int) {
+    INSTALLED(R.string.models_installed),
+    CATALOG(R.string.models_catalog),
+    SEARCH(R.string.models_search),
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModelsScreen(container: AppContainer) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val prefs = remember { ModelPrefs(context) }
     val chat by container.chat.state.collectAsState()
-    val download by container.downloads.active.collectAsState()
+    val queue by container.downloads.queue.collectAsState()
     val revision by container.downloads.revision.collectAsState()
     val models = remember(revision) { container.models.list() }
+    val installed = remember(models) { models.mapTo(HashSet()) { File(it.path).name } }
     val totalRam = remember { container.device.inspect().memory.totalBytes }
 
+    var section by rememberSaveable { mutableStateOf(Section.INSTALLED) }
+    var token by remember { mutableStateOf(prefs.hfToken) }
+    var showToken by rememberSaveable { mutableStateOf(false) }
     var showLink by rememberSaveable { mutableStateOf(false) }
+    var browseRepo by rememberSaveable { mutableStateOf<String?>(null) }
     var importing by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
     var toDelete by remember { mutableStateOf<ModelDescriptor?>(null) }
+    val search = remember { HfSearchState() }
+
+    var catalog by remember { mutableStateOf<Catalog?>(null) }
+    LaunchedEffect(Unit) {
+        val repository = CatalogRepository(context)
+        catalog = repository.load()
+        catalog = repository.refresh()
+    }
+
+    val askNotifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+    val download: (HfLink.File) -> Unit = { file ->
+        // The download does not wait for the answer: without the permission it just has no notification.
+        container.downloads.enqueue(context, file)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !prefs.notificationsAsked &&
+            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            prefs.notificationsAsked = true
+            askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
@@ -77,83 +128,118 @@ fun ModelsScreen(container: AppContainer) {
         }
     }
 
-    LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        item {
-            Row(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { showLink = true }, enabled = download?.progress == null || download?.error != null) {
-                    Text(stringResource(R.string.models_from_link))
-                }
-                OutlinedButton(onClick = { picker.launch(arrayOf("*/*")) }, enabled = !importing) {
-                    Text(stringResource(R.string.models_from_file))
+    val downloads: LazyListScope.() -> Unit = {
+        items(queue, key = { "download-${it.id}" }) { item ->
+            DownloadCard(
+                item,
+                onCancel = { container.downloads.cancel(item) },
+                onRetry = { download(item.file) },
+                onToken = { showToken = true },
+            )
+        }
+    }
+
+    Column(Modifier.fillMaxSize()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SecondaryTabRow(selectedTabIndex = section.ordinal, modifier = Modifier.weight(1f)) {
+                Section.entries.forEach {
+                    Tab(
+                        selected = section == it,
+                        onClick = { section = it },
+                        text = { Text(stringResource(it.label), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    )
                 }
             }
+            IconButton(onClick = { showToken = true }) {
+                Icon(Icons.Outlined.Key, stringResource(R.string.hf_token))
+            }
         }
-        if (importing) item {
-            Text(stringResource(R.string.models_importing))
-            LinearProgressIndicator(Modifier.fillMaxWidth())
-        }
-        download?.let { d ->
-            item {
-                Card {
-                    Column(Modifier.padding(12.dp)) {
-                        Text(d.fileName, style = MaterialTheme.typography.titleSmall)
-                        val p = d.progress
-                        when {
-                            d.error != null -> Text(d.error, color = MaterialTheme.colorScheme.error)
-                            p == null -> LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 8.dp))
-                            else -> {
-                                LinearProgressIndicator(
-                                    progress = { p.fraction },
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                                )
-                                Text(
-                                    "${Formatter.formatShortFileSize(context, p.doneBytes)} / " +
-                                        Formatter.formatShortFileSize(context, p.totalBytes),
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
+        when (section) {
+            Section.INSTALLED -> LazyColumn(
+                Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(onClick = { showLink = true }) { Text(stringResource(R.string.models_from_link)) }
+                        OutlinedButton(onClick = { picker.launch(arrayOf("*/*")) }, enabled = !importing) {
+                            Text(stringResource(R.string.models_from_file))
+                        }
+                    }
+                }
+                if (importing) item {
+                    Text(stringResource(R.string.models_importing))
+                    LinearProgressIndicator(Modifier.fillMaxWidth())
+                }
+                downloads()
+                if (models.isEmpty() && queue.isEmpty()) item {
+                    Text(stringResource(R.string.models_empty), modifier = Modifier.padding(top = 16.dp))
+                }
+                items(models, key = { it.path }) { model ->
+                    ListItem(
+                        modifier = Modifier.clickable { container.chat.select(model) },
+                        leadingContent = {
+                            RadioButton(
+                                selected = chat.model?.path == model.path,
+                                onClick = { container.chat.select(model) },
+                            )
+                        },
+                        headlineContent = { Text(model.id) },
+                        supportingContent = {
+                            val size = Formatter.formatShortFileSize(context, model.sizeBytes)
+                            Text("$size · ${stringResource(ramFit(model.sizeBytes, totalRam).label)}")
+                        },
+                        trailingContent = {
+                            IconButton(onClick = { toDelete = model }) {
+                                Icon(Icons.Outlined.Delete, stringResource(R.string.delete))
                             }
-                        }
-                        TextButton(onClick = { container.downloads.cancel() }) {
-                            Text(stringResource(if (d.error != null) R.string.close else R.string.cancel))
-                        }
-                    }
+                        },
+                    )
                 }
             }
-        }
-        if (models.isEmpty() && download == null) item {
-            Text(stringResource(R.string.models_empty), modifier = Modifier.padding(top = 24.dp))
-        }
-        items(models, key = { it.path }) { model ->
-            val selected = chat.model?.path == model.path
-            ListItem(
-                modifier = Modifier.clickable { container.chat.select(model) },
-                leadingContent = { RadioButton(selected = selected, onClick = { container.chat.select(model) }) },
-                headlineContent = { Text(model.id) },
-                supportingContent = {
-                    val size = Formatter.formatShortFileSize(context, model.sizeBytes)
-                    // Weights plus roughly 1.5 GB for context, Android and the app itself.
-                    val need = model.sizeBytes + 1_500_000_000L
-                    val fit = when {
-                        need > totalRam -> R.string.fit_no
-                        need > totalRam * 0.7 -> R.string.fit_tight
-                        else -> R.string.fit_ok
-                    }
-                    Text("$size · ${stringResource(fit)}")
-                },
-                trailingContent = {
-                    IconButton(onClick = { toDelete = model }) {
-                        Icon(Icons.Outlined.Delete, stringResource(R.string.delete))
-                    }
-                },
+            Section.CATALOG -> CatalogSection(catalog, installed, queue, totalRam, prefs, download, downloads)
+            Section.SEARCH -> HfSearchSection(
+                state = search,
+                onSearch = { search.run(scope, token) },
+                onRepo = { browseRepo = it },
+                header = downloads,
             )
         }
     }
 
     if (showLink) LinkDialog(
         onDismiss = { showLink = false },
-        onPicked = {
+        onFile = {
             showLink = false
-            container.downloads.start(it)
+            download(it)
+        },
+        onRepo = {
+            showLink = false
+            browseRepo = it
+        },
+    )
+    browseRepo?.let { repo ->
+        RepoFilesDialog(
+            repo = repo,
+            token = token,
+            totalRam = totalRam,
+            installed = installed,
+            onDismiss = { browseRepo = null },
+            onPicked = {
+                browseRepo = null
+                download(it)
+            },
+            onToken = { showToken = true },
+        )
+    }
+    if (showToken) TokenDialog(
+        current = token,
+        onDismiss = { showToken = false },
+        onSave = {
+            prefs.hfToken = it
+            token = prefs.hfToken
+            showToken = false
         },
     )
     message?.let {
@@ -181,75 +267,49 @@ fun ModelsScreen(container: AppContainer) {
     }
 }
 
-/** Paste a Hugging Face link; a repository link leads to a choice of its GGUF files. */
-@Composable
-private fun LinkDialog(onDismiss: () -> Unit, onPicked: (HfLink.File) -> Unit) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var text by rememberSaveable { mutableStateOf("") }
-    var error by remember { mutableStateOf<String?>(null) }
-    var busy by remember { mutableStateOf(false) }
-    var repo by remember { mutableStateOf<String?>(null) }
-    var files by remember { mutableStateOf<List<HfFile>>(emptyList()) }
-    val invalid = stringResource(R.string.link_invalid)
-    val noFiles = stringResource(R.string.link_no_gguf)
+internal val RamFit.label: Int
+    @StringRes get() = when (this) {
+        RamFit.FITS -> R.string.fit_ok
+        RamFit.TIGHT -> R.string.fit_tight
+        RamFit.TOO_LARGE -> R.string.fit_no
+    }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.models_from_link)) },
-        text = {
-            Column {
-                if (repo == null) {
-                    OutlinedTextField(
-                        value = text,
-                        onValueChange = { text = it; error = null },
-                        label = { Text(stringResource(R.string.link_hint)) },
-                        isError = error != null,
-                        supportingText = { Text(error ?: stringResource(R.string.link_help)) },
-                        modifier = Modifier.fillMaxWidth(),
+@Composable
+private fun DownloadCard(item: DownloadItem, onCancel: () -> Unit, onRetry: () -> Unit, onToken: () -> Unit) {
+    val context = LocalContext.current
+    val failed = item.state == DownloadState.FAILED
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp)) {
+            Text(item.fileName, style = MaterialTheme.typography.titleSmall)
+            val p = item.progress
+            when {
+                failed -> Text(
+                    if (item.accessDenied) stringResource(R.string.hf_token_needed) else item.error.orEmpty(),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                item.state == DownloadState.WAITING ->
+                    Text(stringResource(R.string.download_waiting), style = MaterialTheme.typography.bodySmall)
+                p == null -> LinearProgressIndicator(Modifier.fillMaxWidth().padding(vertical = 8.dp))
+                else -> {
+                    LinearProgressIndicator(
+                        progress = { p.fraction },
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                     )
-                    if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-                } else {
-                    LazyColumn {
-                        items(files) { file ->
-                            ListItem(
-                                modifier = Modifier.clickable { onPicked(HfLink.File(repo!!, "main", file.path)) },
-                                headlineContent = { Text(file.path) },
-                                supportingContent = { Text(Formatter.formatShortFileSize(context, file.sizeBytes)) },
-                            )
-                        }
-                    }
+                    Text(
+                        "${Formatter.formatShortFileSize(context, p.doneBytes)} / " +
+                            Formatter.formatShortFileSize(context, p.totalBytes),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                 }
             }
-        },
-        confirmButton = {
-            if (repo == null) TextButton(
-                enabled = !busy && text.isNotBlank(),
-                onClick = {
-                    when (val link = HfLink.parse(text)) {
-                        null -> error = invalid
-                        is HfLink.File ->
-                            if (link.fileName.endsWith(".gguf", ignoreCase = true)) onPicked(link) else error = noFiles
-                        is HfLink.Repo -> {
-                            busy = true
-                            scope.launch {
-                                try {
-                                    val found = HfApi.listGgufFiles(link.repo)
-                                    if (found.isEmpty()) error = noFiles else {
-                                        files = found
-                                        repo = link.repo
-                                    }
-                                } catch (e: Exception) {
-                                    error = e.message ?: e.toString()
-                                } finally {
-                                    busy = false
-                                }
-                            }
-                        }
-                    }
-                },
-            ) { Text(stringResource(R.string.next)) }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
-    )
+            Row {
+                if (failed) TextButton(onClick = onRetry) { Text(stringResource(R.string.download_retry)) }
+                if (item.accessDenied) TextButton(onClick = onToken) { Text(stringResource(R.string.hf_token)) }
+                TextButton(onClick = onCancel) {
+                    Text(stringResource(if (failed) R.string.delete else R.string.cancel))
+                }
+            }
+        }
+    }
 }

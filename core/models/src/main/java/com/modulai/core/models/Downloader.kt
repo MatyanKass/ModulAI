@@ -18,13 +18,16 @@ data class DownloadProgress(val doneBytes: Long, val totalBytes: Long) {
 }
 
 object Downloader {
+    /** Where the unfinished data of a download to [target] is kept. */
+    fun partFile(target: File) = File(target.parentFile, target.name + ".part")
+
     /**
      * Downloads [url] to [target]. Data goes to `<target>.part` first, so an interrupted
      * download resumes from where it stopped the next time the same call is made.
      * The flow completes once [target] exists.
      */
     fun download(url: String, target: File, token: String? = null): Flow<DownloadProgress> = flow {
-        val part = File(target.parentFile, target.name + ".part")
+        val part = partFile(target)
         target.parentFile?.mkdirs()
         var done = if (part.exists()) part.length() else 0L
 
@@ -41,7 +44,7 @@ object Downloader {
                 // The .part file already holds everything.
             } else {
                 if (code == 200) done = 0 // server ignored the range, start over
-                else if (code != 206) throw IOException("Download failed: HTTP $code")
+                else if (code != 206) throw HttpStatusException(code, "Download failed: HTTP $code")
                 val total = done + conn.contentLengthLong.coerceAtLeast(0)
                 RandomAccessFile(part, "rw").use { out ->
                     out.setLength(done)

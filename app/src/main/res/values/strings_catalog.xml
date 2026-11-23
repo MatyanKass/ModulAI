@@ -1,0 +1,32 @@
+<resources>
+    <string name="models_installed">Installed</string>
+    <string name="models_catalog">Catalog</string>
+    <string name="models_search">Search</string>
+    <string name="catalog_all">All</string>
+    <string name="catalog_other">Other</string>
+    <string name="catalog_show_uncensored">Show uncensored models</string>
+    <string name="catalog_empty">The catalog is empty for now. Use search or a link instead.</string>
+    <string name="catalog_none_match">Nothing here with the current filters.</string>
+    <string name="catalog_download">Download</string>
+    <string name="catalog_installed">Installed</string>
+    <string name="catalog_queued">In queue</string>
+    <string name="badge_thinking">thinking</string>
+    <string name="badge_tools">tools</string>
+    <string name="badge_uncensored">uncensored</string>
+    <string name="download_waiting">Waiting in queue</string>
+    <string name="download_retry">Retry</string>
+    <string name="search_hint">Search Hugging Face</string>
+    <string name="search_help">Finds repositories with GGUF models. Tap one to pick a file.</string>
+    <string name="search_empty">Nothing found.</string>
+    <string name="search_stats">%1$s downloads · %2$s likes</string>
+    <string name="hf_token">HF token</string>
+    <string name="hf_token_title">Hugging Face token</string>
+    <string name="hf_token_body">Some models can only be downloaded after you accept their terms on Hugging Face. To download them here, create a token at huggingface.co/settings/tokens (read access is enough) and paste it below. The token stays on this device.</string>
+    <string name="hf_token_hint">Token</string>
+    <string name="hf_token_save">Save</string>
+    <string name="hf_token_needed">Hugging Face denied access. If the model is gated, accept its terms on the site and add your token.</string>
+    <string name="notif_channel">Model downloads</string>
+    <string name="notif_preparing">Preparing the download…</string>
+    <string name="notif_percent" translatable="false">%1$d%%</string>
+    <string name="notif_queue">%1$d more in queue</string>
+</resources>
