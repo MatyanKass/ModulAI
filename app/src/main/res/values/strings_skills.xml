@@ -1,0 +1,47 @@
+<resources>
+    <string name="ext_title">Skills and MCP</string>
+    <string name="ext_tab_skills">Skills</string>
+    <string name="ext_tab_mcp">MCP servers</string>
+    <string name="ext_save">Save</string>
+
+    <string name="skills_about">A skill is a set of instructions for one kind of task. The model sees only the list of enabled skills and loads the full text of one when it needs it, so skills barely take up context.</string>
+    <string name="skills_from_link">From link</string>
+    <string name="skills_from_file">From file</string>
+    <string name="skills_installing">Installing…</string>
+    <string name="skills_empty">No skills yet. Install one from a link or from a SKILL.md or ZIP file.</string>
+    <string name="skills_built_in">Built-in</string>
+    <string name="skills_restore">Restore built-in skills</string>
+    <string name="skills_link_title">Install from a link</string>
+    <string name="skills_link_body">Paste a link to a SKILL.md file, to a ZIP archive, or to a skill folder on GitHub.</string>
+    <string name="skills_link_hint">Link</string>
+    <string name="skills_link_install">Install</string>
+    <string name="skills_install_failed">Could not install the skill</string>
+    <string name="skills_needs_tools">Uses tools: %1$s</string>
+    <string name="skills_files">Extra files: %1$s</string>
+    <string name="skills_delete_title">Delete this skill?</string>
+
+    <string name="mcp_about">MCP (Model Context Protocol) connects the model to tools on a remote server: search, databases, your own services. Add only servers you trust: everything a tool returns is handed to the model, and what the model sends to a tool leaves your device.</string>
+    <string name="mcp_add">Add server</string>
+    <string name="mcp_empty">No servers yet.</string>
+    <string name="mcp_edit_title">MCP server</string>
+    <string name="mcp_name">Name</string>
+    <string name="mcp_url">Server address</string>
+    <string name="mcp_url_hint">Starts with https://</string>
+    <string name="mcp_header_name">Header name (optional)</string>
+    <string name="mcp_header_name_hint">Leave empty to send “Authorization: Bearer …”</string>
+    <string name="mcp_header_value">Token or key (optional)</string>
+    <string name="mcp_header_value_hint">Stored only on this device.</string>
+    <string name="mcp_test">Test connection</string>
+    <string name="mcp_testing">Connecting…</string>
+    <string name="mcp_status_off">Off</string>
+    <string name="mcp_status_idle">Not connected yet</string>
+    <string name="mcp_status_connecting">Connecting…</string>
+    <string name="mcp_status_failed">Error: %1$s</string>
+    <plurals name="mcp_status_connected">
+        <item quantity="one">Connected · %1$d tool</item>
+        <item quantity="other">Connected · %1$d tools</item>
+    </plurals>
+    <string name="mcp_test_ok">Connected (protocol %1$s). Tools: %2$s</string>
+    <string name="mcp_test_ok_empty">Connected (protocol %1$s), but the server offers no tools.</string>
+    <string name="mcp_delete_title">Delete this server?</string>
+</resources>
