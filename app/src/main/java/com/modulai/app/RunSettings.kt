@@ -24,6 +24,8 @@ data class RunSettings(
     val researchDepth: ResearchDepth = ResearchDepth.NORMAL,
     /** Roleplay characters use emoji in their replies. */
     val rpEmoji: Boolean = false,
+    /** Lower the thinking effort when replies get slow, and summarize old messages instead of dropping them. */
+    val autoMode: Boolean = true,
 ) {
     fun withPreset(p: Preset) =
         if (p == Preset.CUSTOM) copy(preset = p) else copy(preset = p, contextTokens = p.contextTokens, effort = p.effort)

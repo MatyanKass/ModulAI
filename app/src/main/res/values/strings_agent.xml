@@ -25,4 +25,6 @@
     <string name="research_sources">Sources</string>
     <string name="set_rp_emoji">Emoji in roleplay</string>
     <string name="set_rp_emoji_hint">Characters use emoji in their replies. Applies to roleplay chats started after the change.</string>
+    <string name="set_auto">Auto mode</string>
+    <string name="set_auto_hint">When replies get slow or the context fills up, the model thinks less; old messages are summarized instead of being dropped.</string>
 </resources>

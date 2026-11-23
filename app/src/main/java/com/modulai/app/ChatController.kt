@@ -2,6 +2,7 @@ package com.modulai.app
 
 import com.modulai.core.agent.Agent
 import com.modulai.core.agent.AgentLog
+import com.modulai.core.agent.AutoTuner
 import com.modulai.core.agent.FetchPageTool
 import com.modulai.core.agent.LogKind
 import com.modulai.core.agent.ResearchTool
@@ -22,6 +23,7 @@ import com.modulai.core.runtime.Role
 import com.modulai.core.runtime.SamplingParams
 import com.modulai.core.runtime.StopReason
 import com.modulai.core.runtime.TextSession
+import com.modulai.core.runtime.fitToContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -138,12 +140,38 @@ class ChatController(private val container: AppContainer) {
             try {
                 val settings = container.runSettings.value
                 val s = ensureLoaded(model, settings)
-                val system = listOf(base.systemPrompt ?: settings.systemPrompt, roleplayExtras(base, history))
-                    .filter { it.isNotBlank() }.joinToString("\n\n").trim()
-                val prompt = if (system.isEmpty()) history else listOf(ChatMessage(Role.SYSTEM, system)) + history
-                val params = SamplingParams(temperature = settings.temperature, effort = settings.effort)
-                val tools = if (settings.webTools) webTools(s, params, settings) else emptyList()
-                val promptTokens = s.countTokens(prompt, settings.effort, tools.map { it.spec })
+                val extras = roleplayExtras(base, history)
+                var chat = _state.value.chat
+                fun promptFor(c: StoredChat): List<ChatMessage> {
+                    val summary = c.summary.takeIf { it.isNotBlank() }?.let { "Summary of the earlier conversation:\n$it" }
+                    val system = listOfNotNull(base.systemPrompt ?: settings.systemPrompt, extras, summary)
+                        .filter { it.isNotBlank() }.joinToString("\n\n").trim()
+                    val recent = history.drop(c.summarized)
+                    return if (system.isEmpty()) recent else listOf(ChatMessage(Role.SYSTEM, system)) + recent
+                }
+                var prompt = promptFor(chat)
+                val tools = if (settings.webTools) webTools(s, settings) else emptyList()
+                val specs = tools.map { it.spec }
+
+                if (settings.autoMode) {
+                    // Messages that no longer fit are folded into the summary instead of being forgotten.
+                    val fitted = s.fitToContext(prompt, settings.effort, tools = specs)
+                    val dropped = prompt.size - fitted.size
+                    if (dropped > 0) {
+                        _state.update { it.copy(loading = true) }
+                        val old = history.drop(chat.summarized).take(dropped)
+                        val summary = AutoTuner.summarize(s, chat.summary, old)
+                        chat = chat.copy(summary = summary, summarized = chat.summarized + dropped)
+                        _state.update { it.copy(chat = it.chat.copy(summary = chat.summary, summarized = chat.summarized), loading = false) }
+                        log.add(LogKind.NOTE, "Summarized $dropped older messages", summary)
+                        prompt = promptFor(chat)
+                    }
+                }
+                val promptTokens = s.countTokens(prompt, settings.effort, specs)
+                val effort = if (!settings.autoMode) settings.effort else AutoTuner.effort(
+                    settings.effort, _state.value.tokensPerSecond, promptTokens.toFloat() / s.contextTokens,
+                )
+                val params = SamplingParams(temperature = settings.temperature, effort = effort)
 
                 _state.update {
                     it.copy(generating = true, usedTokens = promptTokens, contextTokens = s.contextTokens, tokensPerSecond = 0f)
@@ -189,10 +217,14 @@ class ChatController(private val container: AppContainer) {
 
     private fun show(messages: List<ChatMessage>) = _state.update { it.copy(chat = it.chat.copy(messages = messages)) }
 
-    private fun webTools(s: TextSession, params: SamplingParams, settings: RunSettings): List<Tool> = listOf(
+    private fun webTools(s: TextSession, settings: RunSettings): List<Tool> = listOf(
         WebSearchTool(container.web),
         FetchPageTool(container.web, maxChars = s.contextTokens.coerceIn(1500, 8000)),
-        ResearchTool(Researcher(s, container.web, log), { params }, { settings.researchDepth }),
+        ResearchTool(
+            Researcher(s, container.web, log),
+            { SamplingParams(temperature = settings.temperature, effort = settings.effort) },
+            { settings.researchDepth },
+        ),
     )
 
     private suspend fun ensureLoaded(model: ModelDescriptor, settings: RunSettings): TextSession = loadLock.withLock {

@@ -25,4 +25,6 @@
     <string name="research_sources">Источники</string>
     <string name="set_rp_emoji">Эмодзи в ролевой игре</string>
     <string name="set_rp_emoji_hint">Персонажи используют эмодзи в ответах. Действует для ролевых чатов, начатых после изменения.</string>
+    <string name="set_auto">Авто-режим</string>
+    <string name="set_auto_hint">Когда ответы замедляются или контекст заполняется, модель думает меньше; старые сообщения сжимаются в краткий пересказ, а не выбрасываются.</string>
 </resources>

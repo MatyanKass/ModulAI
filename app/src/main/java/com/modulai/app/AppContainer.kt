@@ -51,6 +51,7 @@ class AppContainer(private val context: Context) {
             systemPrompt = p[SYSTEM_PROMPT] ?: d.systemPrompt,
             webTools = p[WEB_TOOLS] ?: d.webTools,
             rpEmoji = p[RP_EMOJI] ?: d.rpEmoji,
+            autoMode = p[AUTO_MODE] ?: d.autoMode,
             researchDepth = p[RESEARCH_DEPTH]?.let { name -> ResearchDepth.entries.find { it.name == name } }
                 ?: d.researchDepth,
         )
@@ -76,6 +77,7 @@ class AppContainer(private val context: Context) {
             it[SYSTEM_PROMPT] = s.systemPrompt
             it[WEB_TOOLS] = s.webTools
             it[RP_EMOJI] = s.rpEmoji
+            it[AUTO_MODE] = s.autoMode
             it[RESEARCH_DEPTH] = s.researchDepth.name
         }
     }
@@ -98,6 +100,7 @@ class AppContainer(private val context: Context) {
         val SYSTEM_PROMPT = stringPreferencesKey("system_prompt")
         val WEB_TOOLS = booleanPreferencesKey("web_tools")
         val RP_EMOJI = booleanPreferencesKey("rp_emoji")
+        val AUTO_MODE = booleanPreferencesKey("auto_mode")
         val RESEARCH_DEPTH = stringPreferencesKey("research_depth")
     }
 }
