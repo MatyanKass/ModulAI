@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <application
         android:name=".ModulAiApp"
         android:allowBackup="false"
@@ -14,6 +16,9 @@
         android:largeHeap="true"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.NoActionBar">
+        <!-- The GPU backend loads the vendor OpenCL driver; devices without one still run on CPU. -->
+        <uses-native-library android:name="libOpenCL.so" android:required="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

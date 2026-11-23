@@ -45,7 +45,11 @@ dependencies {
     implementation(project(":core:models"))
     implementation(project(":core:characters"))
     implementation(project(":core:agent"))
+    implementation(project(":core:code"))
+    implementation(project(":core:skills"))
     implementation(project(":engines:llm-llamacpp"))
+    implementation(project(":engines:image-sdcpp"))
+    implementation(project(":engines:audio"))
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

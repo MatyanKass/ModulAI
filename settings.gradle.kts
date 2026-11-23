@@ -13,4 +13,5 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "ModulAI"
-include(":app", ":core:runtime", ":core:device", ":core:models", ":core:characters", ":core:agent", ":engines:llm-llamacpp")
+include(":app", ":core:runtime", ":core:device", ":core:models", ":core:characters", ":core:agent", ":core:code", ":core:skills",
+    ":engines:llm-llamacpp", ":engines:image-sdcpp", ":engines:audio")
