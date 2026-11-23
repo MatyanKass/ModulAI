@@ -65,8 +65,7 @@ import com.modulai.core.code.Refusal
 
 @Composable
 fun CodeScreen(container: AppContainer, onBack: () -> Unit, onPickModel: () -> Unit) {
-    val context = LocalContext.current
-    val controller = remember(container) { CodeController.of(container, context) }
+    val controller = container.code
     val state by controller.state.collectAsState()
     LaunchedEffect(controller) { controller.refresh() }
 

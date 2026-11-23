@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.modulai.app.code.CodeController
 import com.modulai.core.agent.HttpWeb
 import com.modulai.core.agent.ResearchDepth
 import com.modulai.core.agent.Web
@@ -59,6 +60,7 @@ class AppContainer(private val context: Context) {
 
     val chat = ChatController(this)
     val research = ResearchController(this)
+    val code = CodeController(this, java.io.File(context.filesDir, "projects"))
     val downloads = ModelDownloads(this)
 
     suspend fun confirmAge() {

@@ -314,15 +314,5 @@ class CodeController(private val container: AppContainer, projectsDir: File) {
     companion object {
         /** A coding task takes a read, a few writes and often a retry; the default of the agent is too tight. */
         private const val MAX_STEPS = 16
-
-        private var instance: CodeController? = null
-
-        /**
-         * The controller for [container]. Stands in for a `container.code` property: once AppContainer
-         * constructs the controller itself, the screen should take it from there and this can go.
-         */
-        fun of(container: AppContainer, context: Context): CodeController = synchronized(this) {
-            instance ?: CodeController(container, File(context.applicationContext.filesDir, "projects")).also { instance = it }
-        }
     }
 }

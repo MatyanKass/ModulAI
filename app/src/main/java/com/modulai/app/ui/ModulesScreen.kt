@@ -45,7 +45,7 @@ private val modules = listOf(
     ModuleCard(R.string.mod_chat, R.string.mod_chat_desc, Icons.Outlined.Chat, CHAT_ROUTE),
     ModuleCard(R.string.mod_rp, R.string.mod_rp_desc, Icons.Outlined.TheaterComedy, RP_ROUTE),
     ModuleCard(R.string.mod_research, R.string.mod_research_desc, Icons.Outlined.TravelExplore, RESEARCH_ROUTE),
-    ModuleCard(R.string.mod_code, R.string.mod_code_desc, Icons.Outlined.Code),
+    ModuleCard(R.string.mod_code, R.string.mod_code_desc, Icons.Outlined.Code, CODE_ROUTE),
     ModuleCard(R.string.mod_image, R.string.mod_image_desc, Icons.Outlined.Image),
     ModuleCard(R.string.mod_audio, R.string.mod_audio_desc, Icons.Outlined.GraphicEq),
     ModuleCard(R.string.mod_video, R.string.mod_video_desc, Icons.Outlined.Movie),

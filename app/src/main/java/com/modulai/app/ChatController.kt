@@ -225,6 +225,7 @@ class ChatController(private val container: AppContainer) {
             { SamplingParams(temperature = settings.temperature, effort = settings.effort) },
             { settings.researchDepth },
         ),
+        container.code.taskTool(s, SamplingParams(temperature = settings.temperature, effort = settings.effort)),
     )
 
     private suspend fun ensureLoaded(model: ModelDescriptor, settings: RunSettings): TextSession = loadLock.withLock {
