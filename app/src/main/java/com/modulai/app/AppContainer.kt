@@ -10,6 +10,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.modulai.core.agent.HttpWeb
 import com.modulai.core.agent.ResearchDepth
 import com.modulai.core.agent.Web
+import com.modulai.core.characters.CharacterStore
 import com.modulai.core.device.DeviceInspector
 import com.modulai.core.models.ModelStore
 import com.modulai.core.runtime.Effort
@@ -33,6 +34,7 @@ class AppContainer(private val context: Context) {
     val models = ModelStore(context)
     val chats = ChatStore(java.io.File(context.filesDir, "chats"))
     val web: Web = HttpWeb()
+    val characters = CharacterStore(context)
 
     val ageConfirmed: Flow<Boolean> = context.settings.data.map { it[AGE_CONFIRMED] ?: false }
 
@@ -48,6 +50,7 @@ class AppContainer(private val context: Context) {
             temperature = p[TEMPERATURE] ?: d.temperature,
             systemPrompt = p[SYSTEM_PROMPT] ?: d.systemPrompt,
             webTools = p[WEB_TOOLS] ?: d.webTools,
+            rpEmoji = p[RP_EMOJI] ?: d.rpEmoji,
             researchDepth = p[RESEARCH_DEPTH]?.let { name -> ResearchDepth.entries.find { it.name == name } }
                 ?: d.researchDepth,
         )
@@ -72,6 +75,7 @@ class AppContainer(private val context: Context) {
             it[TEMPERATURE] = s.temperature
             it[SYSTEM_PROMPT] = s.systemPrompt
             it[WEB_TOOLS] = s.webTools
+            it[RP_EMOJI] = s.rpEmoji
             it[RESEARCH_DEPTH] = s.researchDepth.name
         }
     }
@@ -93,6 +97,7 @@ class AppContainer(private val context: Context) {
         val TEMPERATURE = floatPreferencesKey("temperature")
         val SYSTEM_PROMPT = stringPreferencesKey("system_prompt")
         val WEB_TOOLS = booleanPreferencesKey("web_tools")
+        val RP_EMOJI = booleanPreferencesKey("rp_emoji")
         val RESEARCH_DEPTH = stringPreferencesKey("research_depth")
     }
 }

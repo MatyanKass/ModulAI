@@ -23,6 +23,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.modulai.app.AppContainer
 import com.modulai.app.R
+import com.modulai.app.ui.rp.RpScreen
 
 const val CHAT_ROUTE = "chat"
 const val RESEARCH_ROUTE = "research"
@@ -78,6 +79,15 @@ fun MainScaffold(container: AppContainer) {
             modifier = if (route in FULL_SCREEN) Modifier else Modifier.padding(padding),
         ) {
             composable(Tab.MODULES.route) { ModulesScreen(onOpen = { nav.navigate(it) }) }
+            composable(RP_ROUTE) {
+                RpScreen(
+                    onBack = { nav.popBackStack() },
+                    onStartChat = { card, persona, greetingIndex ->
+                        container.chat.startRoleplay(card, persona, greetingIndex)
+                        nav.navigate(CHAT_ROUTE)
+                    },
+                )
+            }
             composable(RESEARCH_ROUTE) {
                 ResearchScreen(container, onBack = { nav.popBackStack() }, onPickModel = pickModel)
             }

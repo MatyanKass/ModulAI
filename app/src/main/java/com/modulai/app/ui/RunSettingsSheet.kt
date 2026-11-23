@@ -76,6 +76,7 @@ fun RunSettingsSheet(container: AppContainer, onDismiss: () -> Unit) {
             )
 
             Toggle(R.string.set_web_tools, R.string.set_web_tools_hint, settings.webTools) { save(settings.copy(webTools = it)) }
+            Toggle(R.string.set_rp_emoji, R.string.set_rp_emoji_hint, settings.rpEmoji) { save(settings.copy(rpEmoji = it)) }
             Toggle(R.string.set_mlock, R.string.set_mlock_hint, settings.lockMemory) { save(settings.copy(lockMemory = it)) }
             Toggle(R.string.set_mmap, R.string.set_mmap_hint, settings.useMmap) { save(settings.copy(useMmap = it)) }
 

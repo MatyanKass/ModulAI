@@ -22,6 +22,8 @@ data class RunSettings(
     /** Let the chat model search the web, open pages and start research on its own. */
     val webTools: Boolean = false,
     val researchDepth: ResearchDepth = ResearchDepth.NORMAL,
+    /** Roleplay characters use emoji in their replies. */
+    val rpEmoji: Boolean = false,
 ) {
     fun withPreset(p: Preset) =
         if (p == Preset.CUSTOM) copy(preset = p) else copy(preset = p, contextTokens = p.contextTokens, effort = p.effort)

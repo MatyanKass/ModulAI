@@ -23,4 +23,6 @@
     <string name="research_reading">Reading pages: %1$d of %2$d</string>
     <string name="research_writing">Writing the report…</string>
     <string name="research_sources">Sources</string>
+    <string name="set_rp_emoji">Emoji in roleplay</string>
+    <string name="set_rp_emoji_hint">Characters use emoji in their replies. Applies to roleplay chats started after the change.</string>
 </resources>

@@ -8,6 +8,12 @@ import com.modulai.core.agent.ResearchTool
 import com.modulai.core.agent.Researcher
 import com.modulai.core.agent.Tool
 import com.modulai.core.agent.WebSearchTool
+import com.modulai.core.characters.CharacterCard
+import com.modulai.core.characters.Persona
+import com.modulai.core.characters.activeLorebook
+import com.modulai.core.characters.applyMacros
+import com.modulai.core.characters.buildSystemPrompt
+import com.modulai.core.characters.greeting
 import com.modulai.core.runtime.ChatMessage
 import com.modulai.core.runtime.LoadConfig
 import com.modulai.core.runtime.ModelDescriptor
@@ -62,21 +68,37 @@ class ChatController(private val container: AppContainer) {
         _state.update { it.copy(model = model, error = null, usedTokens = 0, contextTokens = 0) }
     }
 
-    fun newChat(systemPrompt: String? = null, characterName: String? = null, greeting: String? = null) {
+    fun newChat() {
         stop()
         log.clear()
-        val messages = listOfNotNull(greeting?.takeIf { it.isNotBlank() }?.let { ChatMessage(Role.ASSISTANT, it) })
-        _state.update {
-            it.copy(
-                chat = StoredChat(
-                    title = characterName.orEmpty(),
-                    systemPrompt = systemPrompt,
-                    characterName = characterName,
-                    messages = messages,
-                ),
-                error = null, usedTokens = 0, trimmed = 0, truncated = false,
-            )
-        }
+        _state.update { it.copy(chat = StoredChat(), error = null, usedTokens = 0, trimmed = 0, truncated = false) }
+    }
+
+    /** Starts a roleplay conversation that opens with the character's greeting. */
+    fun startRoleplay(card: CharacterCard, persona: Persona, greetingIndex: Int) {
+        newChat()
+        val opening = greeting(card, persona, greetingIndex)
+        val chat = StoredChat(
+            title = card.name,
+            systemPrompt = buildSystemPrompt(card, persona, container.runSettings.value.rpEmoji),
+            characterName = card.name,
+            characterId = card.id,
+            messages = listOfNotNull(opening.takeIf { it.isNotBlank() }?.let { ChatMessage(Role.ASSISTANT, it) }),
+        )
+        _state.update { it.copy(chat = chat) }
+    }
+
+    /**
+     * The character's lorebook entries triggered by the recent messages, and its closing
+     * instructions. Appended to the system prompt because many chat templates reject a
+     * system message anywhere but first.
+     */
+    private suspend fun roleplayExtras(chat: StoredChat, history: List<ChatMessage>): String = withContext(Dispatchers.IO) {
+        val card = chat.characterId?.let { container.characters.get(it) } ?: return@withContext ""
+        val persona = container.characters.persona()
+        val recent = history.takeLast(6).joinToString("\n") { it.content }
+        val parts = activeLorebook(card, persona, recent) + applyMacros(card.postHistoryInstructions, card, persona)
+        parts.filter { it.isNotBlank() }.joinToString("\n\n")
     }
 
     fun open(id: String) {
@@ -116,7 +138,8 @@ class ChatController(private val container: AppContainer) {
             try {
                 val settings = container.runSettings.value
                 val s = ensureLoaded(model, settings)
-                val system = (base.systemPrompt ?: settings.systemPrompt).trim()
+                val system = listOf(base.systemPrompt ?: settings.systemPrompt, roleplayExtras(base, history))
+                    .filter { it.isNotBlank() }.joinToString("\n\n").trim()
                 val prompt = if (system.isEmpty()) history else listOf(ChatMessage(Role.SYSTEM, system)) + history
                 val params = SamplingParams(temperature = settings.temperature, effort = settings.effort)
                 val tools = if (settings.webTools) webTools(s, params, settings) else emptyList()

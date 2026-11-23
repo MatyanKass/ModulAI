@@ -43,7 +43,7 @@ private data class ModuleCard(
 
 private val modules = listOf(
     ModuleCard(R.string.mod_chat, R.string.mod_chat_desc, Icons.Outlined.Chat, CHAT_ROUTE),
-    ModuleCard(R.string.mod_rp, R.string.mod_rp_desc, Icons.Outlined.TheaterComedy),
+    ModuleCard(R.string.mod_rp, R.string.mod_rp_desc, Icons.Outlined.TheaterComedy, RP_ROUTE),
     ModuleCard(R.string.mod_research, R.string.mod_research_desc, Icons.Outlined.TravelExplore, RESEARCH_ROUTE),
     ModuleCard(R.string.mod_code, R.string.mod_code_desc, Icons.Outlined.Code),
     ModuleCard(R.string.mod_image, R.string.mod_image_desc, Icons.Outlined.Image),

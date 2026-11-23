@@ -15,6 +15,7 @@ data class StoredChat(
     /** Set for roleplay chats; replaces the global system prompt. */
     val systemPrompt: String? = null,
     val characterName: String? = null,
+    val characterId: String? = null,
 )
 
 /** One JSON file per conversation. Small enough that a database would only add weight. */
@@ -38,6 +39,7 @@ class ChatStore(private val dir: File) {
             .put("updatedAt", chat.updatedAt)
             .put("systemPrompt", chat.systemPrompt ?: JSONObject.NULL)
             .put("characterName", chat.characterName ?: JSONObject.NULL)
+            .put("characterId", chat.characterId ?: JSONObject.NULL)
             .put("messages", JSONArray(chat.messages.map { JSONObject().put("role", it.role.wire).put("content", it.content) }))
         // Write to a temp file first so a crash mid-write cannot destroy the conversation.
         val tmp = File(dir, "${chat.id}.tmp")
@@ -65,6 +67,7 @@ class ChatStore(private val dir: File) {
             messages = messages,
             systemPrompt = if (o.isNull("systemPrompt")) null else o.getString("systemPrompt"),
             characterName = if (o.isNull("characterName")) null else o.getString("characterName"),
+            characterId = if (o.isNull("characterId")) null else o.getString("characterId"),
         )
     }
 }

@@ -23,4 +23,6 @@
     <string name="research_reading">Читаю страницы: %1$d из %2$d</string>
     <string name="research_writing">Пишу отчёт…</string>
     <string name="research_sources">Источники</string>
+    <string name="set_rp_emoji">Эмодзи в ролевой игре</string>
+    <string name="set_rp_emoji_hint">Персонажи используют эмодзи в ответах. Действует для ролевых чатов, начатых после изменения.</string>
 </resources>
