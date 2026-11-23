@@ -142,15 +142,17 @@ class ChatController(private val container: AppContainer) {
                 val s = ensureLoaded(model, settings)
                 val extras = roleplayExtras(base, history)
                 var chat = _state.value.chat
+                // tools() must run before promptSection(): it loads the skills the section lists.
+                val tools = if (settings.webTools) webTools(s, settings) + container.extensions.tools() else emptyList()
+                val skills = if (settings.webTools) container.extensions.promptSection() else ""
                 fun promptFor(c: StoredChat): List<ChatMessage> {
                     val summary = c.summary.takeIf { it.isNotBlank() }?.let { "Summary of the earlier conversation:\n$it" }
-                    val system = listOfNotNull(base.systemPrompt ?: settings.systemPrompt, extras, summary)
+                    val system = listOfNotNull(base.systemPrompt ?: settings.systemPrompt, extras, skills, summary)
                         .filter { it.isNotBlank() }.joinToString("\n\n").trim()
                     val recent = history.drop(c.summarized)
                     return if (system.isEmpty()) recent else listOf(ChatMessage(Role.SYSTEM, system)) + recent
                 }
                 var prompt = promptFor(chat)
-                val tools = if (settings.webTools) webTools(s, settings) else emptyList()
                 val specs = tools.map { it.spec }
 
                 if (settings.autoMode) {

@@ -11,8 +11,8 @@
     <string name="chats_title">Chats</string>
     <string name="chats_empty">No saved chats yet.</string>
     <string name="chat_used_tool">Used a tool — see the workspace log</string>
-    <string name="set_web_tools">Web tools</string>
-    <string name="set_web_tools_hint">The model can search the web, open pages and start research when it decides it needs to. Works with models that support tool calling.</string>
+    <string name="set_web_tools">Tools</string>
+    <string name="set_web_tools_hint">The model can search the web, open pages, run research, hand coding tasks to the coder, and use your skills and MCP servers. Works with models that support tool calling.</string>
     <string name="research_topic">What to find out</string>
     <string name="research_start">Start research</string>
     <string name="research_quick">Quick · %1$d pages</string>
@@ -27,4 +27,6 @@
     <string name="set_rp_emoji_hint">Characters use emoji in their replies. Applies to roleplay chats started after the change.</string>
     <string name="set_auto">Auto mode</string>
     <string name="set_auto_hint">When replies get slow or the context fills up, the model thinks less; old messages are summarized instead of being dropped.</string>
+    <string name="mod_skills">Skills and MCP</string>
+    <string name="mod_skills_desc">Extend what the model can do</string>
 </resources>

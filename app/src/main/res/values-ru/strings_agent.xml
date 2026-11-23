@@ -11,8 +11,8 @@
     <string name="chats_title">Чаты</string>
     <string name="chats_empty">Сохранённых чатов пока нет.</string>
     <string name="chat_used_tool">Использовал инструмент — см. журнал среды</string>
-    <string name="set_web_tools">Веб-инструменты</string>
-    <string name="set_web_tools_hint">Модель сама ищет в интернете, открывает страницы и запускает исследование, когда считает нужным. Работает с моделями, которые умеют вызывать инструменты.</string>
+    <string name="set_web_tools">Инструменты</string>
+    <string name="set_web_tools_hint">Модель сама ищет в интернете, открывает страницы, запускает исследование, поручает задачи кодеру и пользуется вашими скиллами и MCP-серверами. Работает с моделями, которые умеют вызывать инструменты.</string>
     <string name="research_topic">Что нужно выяснить</string>
     <string name="research_start">Начать исследование</string>
     <string name="research_quick">Быстро · %1$d стр.</string>
@@ -27,4 +27,6 @@
     <string name="set_rp_emoji_hint">Персонажи используют эмодзи в ответах. Действует для ролевых чатов, начатых после изменения.</string>
     <string name="set_auto">Авто-режим</string>
     <string name="set_auto_hint">Когда ответы замедляются или контекст заполняется, модель думает меньше; старые сообщения сжимаются в краткий пересказ, а не выбрасываются.</string>
+    <string name="mod_skills">Скиллы и MCP</string>
+    <string name="mod_skills_desc">Расширения возможностей модели</string>
 </resources>

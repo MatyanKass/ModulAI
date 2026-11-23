@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Movie
@@ -49,6 +50,7 @@ private val modules = listOf(
     ModuleCard(R.string.mod_image, R.string.mod_image_desc, Icons.Outlined.Image),
     ModuleCard(R.string.mod_audio, R.string.mod_audio_desc, Icons.Outlined.GraphicEq),
     ModuleCard(R.string.mod_video, R.string.mod_video_desc, Icons.Outlined.Movie),
+    ModuleCard(R.string.mod_skills, R.string.mod_skills_desc, Icons.Outlined.Extension, SKILLS_ROUTE),
     ModuleCard(R.string.mod_lab, R.string.mod_lab_desc, Icons.Outlined.Science),
 )
 

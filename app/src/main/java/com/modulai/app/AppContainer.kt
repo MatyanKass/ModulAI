@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.modulai.app.code.CodeController
+import com.modulai.app.skills.Extensions
 import com.modulai.core.agent.HttpWeb
 import com.modulai.core.agent.ResearchDepth
 import com.modulai.core.agent.Web
@@ -36,6 +37,7 @@ class AppContainer(private val context: Context) {
     val chats = ChatStore(java.io.File(context.filesDir, "chats"))
     val web: Web = HttpWeb()
     val characters = CharacterStore(context)
+    val extensions = Extensions.of(context)
 
     val ageConfirmed: Flow<Boolean> = context.settings.data.map { it[AGE_CONFIRMED] ?: false }
 

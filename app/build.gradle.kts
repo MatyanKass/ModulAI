@@ -34,6 +34,8 @@ android {
     buildFeatures { compose = true }
     // The model catalog lives at the repository root so it can also be fetched from GitHub.
     sourceSets["main"].assets.srcDir("../catalog")
+    // Built-in skills, one folder each, copied into the user's skill store on first run.
+    sourceSets["main"].assets.srcDir("../skills")
     // llama.cpp dlopen()s its CPU backends by file path, so the libraries have to be
     // extracted on install; by default they stay inside the APK and are never found.
     packaging { jniLibs { useLegacyPackaging = true } }

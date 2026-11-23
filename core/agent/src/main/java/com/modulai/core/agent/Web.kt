@@ -57,7 +57,17 @@ class HttpWeb : Web {
             val charset = Regex("""charset=([\w-]+)""").find(type)?.groupValues?.get(1)
                 ?.let { runCatching { Charset.forName(it) }.getOrNull() } ?: Charsets.UTF_8
             // Pages can be huge; nothing past a couple of megabytes is worth reading on a phone.
-            val bytes = conn.inputStream.use { it.readNBytes(MAX_BYTES) }
+            // InputStream.readNBytes(int) only exists from Android 13, so read the capped amount by hand.
+            val bytes = conn.inputStream.use { input ->
+                val out = java.io.ByteArrayOutputStream()
+                val buffer = ByteArray(16_384)
+                while (out.size() < MAX_BYTES) {
+                    val n = input.read(buffer, 0, minOf(buffer.size, MAX_BYTES - out.size()))
+                    if (n < 0) break
+                    out.write(buffer, 0, n)
+                }
+                out.toByteArray()
+            }
             return Response(String(bytes, charset), type, conn.getHeaderField("Last-Modified"))
         } finally {
             conn.disconnect()

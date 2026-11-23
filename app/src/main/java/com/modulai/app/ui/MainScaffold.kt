@@ -25,6 +25,7 @@ import com.modulai.app.AppContainer
 import com.modulai.app.R
 import com.modulai.app.ui.code.CodeScreen
 import com.modulai.app.ui.rp.RpScreen
+import com.modulai.app.ui.skills.SkillsScreen
 
 const val CHAT_ROUTE = "chat"
 const val RESEARCH_ROUTE = "research"
@@ -96,6 +97,7 @@ fun MainScaffold(container: AppContainer) {
             composable(CODE_ROUTE) {
                 CodeScreen(container, onBack = { nav.popBackStack() }, onPickModel = pickModel)
             }
+            composable(SKILLS_ROUTE) { SkillsScreen(container, onBack = { nav.popBackStack() }) }
             composable(RESEARCH_ROUTE) {
                 ResearchScreen(container, onBack = { nav.popBackStack() }, onPickModel = pickModel)
             }
