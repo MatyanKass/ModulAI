@@ -13,7 +13,7 @@ import com.modulai.app.ui.ModulAiTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    private val container by lazy { AppContainer(applicationContext) }
+    private val container get() = (application as ModulAiApp).container
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
