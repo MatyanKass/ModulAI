@@ -1,0 +1,73 @@
+<resources>
+    <string name="audio_tab_recognize">Speech → text</string>
+    <string name="audio_tab_speak">Text → speech</string>
+    <string name="audio_tab_voices">Voices</string>
+    <string name="audio_tab_models">Models</string>
+    <string name="audio_lang_auto">Auto</string>
+    <string name="audio_lang_ru">Russian</string>
+    <string name="audio_lang_en">English</string>
+
+    <string name="audio_need_speech_model">Speech recognition needs a Whisper model. Download one on the Models tab.</string>
+    <string name="audio_translate">Translate into English</string>
+    <string name="audio_record">Record</string>
+    <string name="audio_stop_recording">Stop</string>
+    <string name="audio_from_file">From file</string>
+    <string name="audio_listening">Listening…</string>
+    <string name="audio_reading_file">Reading the file…</string>
+    <string name="audio_recognizing">Recognizing…</string>
+    <string name="audio_recognizing_percent">Recognizing… %1$d%%</string>
+    <string name="audio_no_speech_found">No speech was found in the recording.</string>
+    <string name="audio_file_truncated">The file is long: only its first %1$d minutes were recognized.</string>
+    <string name="audio_copy">Copy</string>
+    <string name="audio_share">Share</string>
+
+    <string name="audio_loading_voices">Looking for voices…</string>
+    <string name="audio_need_voice">There is nothing to speak with yet: the device has no speech service, and no speech model is installed. Download one on the Models tab.</string>
+    <string name="audio_text_hint">Text to speak</string>
+    <string name="audio_voice">Voice</string>
+    <string name="audio_voice_system_default">System voice</string>
+    <string name="audio_voice_system">System · %1$s</string>
+    <string name="audio_voice_stock">standard voice</string>
+    <string name="audio_voice_cloned">My voice · %1$s</string>
+    <string name="audio_only_system_voices">Only the device\'s own voices are available. Neural voices can be downloaded on the Models tab.</string>
+    <string name="audio_speed">Speed: %1$.1f×</string>
+    <string name="audio_speed_fixed">This voice speaks at its own pace</string>
+    <string name="audio_speak">Speak</string>
+    <string name="audio_replay">Play again</string>
+    <string name="audio_save_wav">Save WAV</string>
+    <string name="audio_saved">Saved to Music/ModulAI/%1$s</string>
+    <string name="audio_synthesizing">Preparing speech…</string>
+
+    <string name="audio_need_cloning_model">Copying a voice needs the Chatterbox Multilingual model. Download it on the Models tab.</string>
+    <string name="audio_clone_help">Record about %1$d seconds of clear speech with no music or noise, or pick a recording. The new voice will then be offered in the voice list and can speak any of the model\'s languages.</string>
+    <string name="audio_clone_consent">Copy only your own voice or the voice of someone who agreed to it.</string>
+    <string name="audio_voice_name">Voice name</string>
+    <string name="audio_voice_default_name">Voice %1$d</string>
+    <string name="audio_record_sample">Record a sample</string>
+    <string name="audio_creating_voice">Creating the voice…</string>
+    <string name="audio_no_cloned_voices">No voices yet.</string>
+    <string name="audio_voice_test">Listen</string>
+    <string name="audio_voice_test_phrase">Hello! This is how my voice sounds.</string>
+    <string name="audio_delete_voice_title">Delete this voice?</string>
+
+    <string name="audio_models_recognition">Speech recognition</string>
+    <string name="audio_models_synthesis">Speech synthesis</string>
+    <string name="audio_model_download">Download</string>
+    <string name="audio_model_installed">Installed</string>
+    <string name="audio_import_help">A Whisper model as a ggml .bin file, or a .zip archive with the files of a speech model.</string>
+    <string name="audio_model_whisper_tiny">The smallest and fastest. Fine for clear English, error-prone in Russian.</string>
+    <string name="audio_model_whisper_base">Fast and light; handles clear Russian and English speech. A good first choice.</string>
+    <string name="audio_model_whisper_small">Noticeably more accurate in Russian, several times slower than Base.</string>
+    <string name="audio_model_whisper_turbo">The most accurate here, for long or noisy recordings. Slow on a phone.</string>
+    <string name="audio_model_supertonic">Fast neural voices, 5 female and 5 male, in 31 languages including Russian and English. Speed can be adjusted. OpenRAIL-M licence.</string>
+    <string name="audio_model_chatterbox">Speaks in a voice copied from a short recording, in 20 languages including Russian and English. Much slower than Supertonic and heavy on memory.</string>
+
+    <string name="audio_err_mic_permission">The microphone is not allowed. Grant the permission in the app settings.</string>
+    <string name="audio_err_mic_failed">The microphone could not be opened. Another app may be using it.</string>
+    <string name="audio_err_nothing_recorded">Nothing was recorded.</string>
+    <string name="audio_err_no_speech_model">No speech recognition model is installed.</string>
+    <string name="audio_err_no_voice">There is no voice to speak with: install a speech model.</string>
+    <string name="audio_err_no_cloning_model">No model that can copy voices is installed.</string>
+    <string name="audio_err_sample_short">The sample is too short: at least 3 seconds of speech are needed.</string>
+    <string name="audio_err_unreadable_file">This file has no sound the device can read.</string>
+</resources>
