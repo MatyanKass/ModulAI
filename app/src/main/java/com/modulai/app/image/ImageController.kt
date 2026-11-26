@@ -266,6 +266,13 @@ class ImageController private constructor(private val context: Context) {
         return save(done.image, ImageMode.UPSCALE, "", -1, 0, model.nameWithoutExtension)
     }
 
+    /** The upscaler chosen in the image settings, loaded if needed; null when none is installed. */
+    suspend fun frameUpscaler(): UpscaleSession? {
+        val settings = _state.value.settings
+        val model = store.find(ImageModelKind.UPSCALER, settings.upscaler) ?: return null
+        return upscaleSession(model, settings)
+    }
+
     private suspend fun collect(events: Flow<ImageEvent>): ImageEvent.Done {
         var result: ImageEvent.Done? = null
         events.collect { event ->

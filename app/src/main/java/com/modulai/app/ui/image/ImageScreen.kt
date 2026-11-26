@@ -544,8 +544,9 @@ private fun ProgressCard(progress: ImageProgress, onStop: () -> Unit) {
     }
 }
 
+/** Decodes [file] off the main thread, downsampled so its longer side stays near [maxSide]. */
 @Composable
-private fun rememberPicture(file: File, maxSide: Int): ImageBitmap? {
+fun rememberPicture(file: File, maxSide: Int): ImageBitmap? {
     val picture by produceState<ImageBitmap?>(null, file) {
         value = withContext(Dispatchers.IO) {
             val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }

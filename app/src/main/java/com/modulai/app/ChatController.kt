@@ -1,6 +1,7 @@
 package com.modulai.app
 
 import com.modulai.app.audio.SpeakTool
+import com.modulai.app.image.GenerateImageTool
 import com.modulai.core.agent.Agent
 import com.modulai.core.agent.AgentLog
 import com.modulai.core.agent.AutoTuner
@@ -230,7 +231,7 @@ class ChatController(private val container: AppContainer) {
         ),
         container.code.taskTool(s, SamplingParams(temperature = settings.temperature, effort = settings.effort)),
         SpeakTool(container.audio),
-    )
+    ) + listOfNotNull(GenerateImageTool(container.context).takeIf { GenerateImageTool.isAvailable(container.context) })
 
     private suspend fun ensureLoaded(model: ModelDescriptor, settings: RunSettings): TextSession = loadLock.withLock {
         val choice = container.engines.resolve(model, container.device.inspect().backends)

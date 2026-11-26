@@ -1,0 +1,18 @@
+<resources>
+    <string name="video_intro">Каждый кадр обрабатывается на телефоне, это секунды на кадр: минутный ролик может занять часы. Лучше брать короткие отрывки.</string>
+    <string name="video_pick">Выбрать видео</string>
+    <string name="video_info">%1$d×%2$d · %3$.0f кадр/с · %4$d кадров · %5$s</string>
+    <string name="video_upscale">Улучшать каждый кадр</string>
+    <string name="video_upscale_hint">Каждый кадр целиком проходит через апскейлер, выбранный в модуле «Картинки», и масштабируется до выходного размера: больше деталей, без обрезки и зума.</string>
+    <string name="video_size">Размер на выходе</string>
+    <string name="video_size_same">Как было · %1$d×%2$d</string>
+    <string name="video_size_double">Крупнее · %1$d×%2$d</string>
+    <string name="video_fps">Удвоить частоту кадров</string>
+    <string name="video_fps_hint">Добавляет кадр между каждыми двумя. Промежуточный кадр — смесь соседних, а не нейросетевая интерполяция, поэтому на быстром движении возможен двоящийся след.</string>
+    <string name="video_start">Начать</string>
+    <string name="video_preparing">Подготовка… %1$s</string>
+    <string name="video_progress">Кадр %1$d из %2$d · %3$s</string>
+    <string name="video_done">Готово. Видео сохранено в «Фильмы/ModulAI».</string>
+    <string name="video_open">Открыть</string>
+    <string name="video_err_no_upscaler">Не установлена модель апскейлера. Скачайте её в модуле «Картинки» (раздел моделей).</string>
+</resources>

@@ -1,6 +1,7 @@
 package com.modulai.app.ui
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +56,8 @@ import androidx.compose.ui.unit.dp
 import com.modulai.app.AppContainer
 import com.modulai.app.ChatController
 import com.modulai.app.R
+import com.modulai.app.image.GenerateImageTool
+import com.modulai.app.ui.image.rememberPicture
 import com.modulai.core.runtime.ChatMessage
 import com.modulai.core.runtime.Role
 import com.modulai.core.runtime.parseReply
@@ -68,7 +71,8 @@ fun ChatScreen(container: AppContainer, onBack: () -> Unit, onPickModel: () -> U
     var showLog by rememberSaveable { mutableStateOf(false) }
     var showChats by rememberSaveable { mutableStateOf(false) }
     // Tool results are for the model; the workspace sheet shows them to the curious.
-    val visible = state.messages.filter { it.role != Role.TOOL }
+    // Generated pictures are the exception: they are shown in place of their tool result.
+    val visible = state.messages.filter { it.role != Role.TOOL || GenerateImageTool.imageFile(it.content) != null }
     val listState = rememberLazyListState()
 
     // Follow the reply while it streams.
@@ -225,7 +229,15 @@ private fun Bubble(message: ChatMessage, streaming: Boolean) {
                 .padding(12.dp)
                 .animateContentSize(),
         ) {
-            if (isUser) {
+            val picture = if (message.role == Role.TOOL) GenerateImageTool.imageFile(message.content) else null
+            if (picture != null) {
+                val bitmap = rememberPicture(picture, 768)
+                if (bitmap != null) {
+                    Image(bitmap, contentDescription = null, modifier = Modifier.widthIn(max = 360.dp).clip(RoundedCornerShape(12.dp)))
+                } else {
+                    Text("…")
+                }
+            } else if (isUser) {
                 SelectionContainer { Text(message.content) }
             } else {
                 val parsed = parseReply(message.content)

@@ -15,9 +15,12 @@ fail=0
 unzip -l "$APK" | grep -q 'lib/arm64-v8a/libggml-cpu' \
     || { echo "FAIL no ggml CPU backend library in the APK"; fail=1; }
 
+unzip -l "$APK" | grep -q 'lib/arm64-v8a/libmodulai-sd.so' \
+    || { echo "FAIL no image engine library in the APK"; fail=1; }
+
 # The JNI bridge calls the PieceCallback methods by name; the shrinker must keep them.
 unzip -q -o "$APK" 'classes*.dex' -d "$TMP"
-for method in onPiece onToolCall; do
+for method in onPiece onToolCall onProgress; do
     found=0
     for dex in "$TMP"/classes*.dex; do
         if "$BT/dexdump" "$dex" 2>/dev/null | grep -q "name          : '$method'"; then found=1; fi

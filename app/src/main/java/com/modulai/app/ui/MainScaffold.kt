@@ -25,8 +25,10 @@ import com.modulai.app.AppContainer
 import com.modulai.app.R
 import com.modulai.app.ui.audio.AudioScreen
 import com.modulai.app.ui.code.CodeScreen
+import com.modulai.app.ui.image.ImageScreen
 import com.modulai.app.ui.rp.RpScreen
 import com.modulai.app.ui.skills.SkillsScreen
+import com.modulai.app.ui.video.VideoScreen
 
 const val CHAT_ROUTE = "chat"
 const val RESEARCH_ROUTE = "research"
@@ -35,9 +37,10 @@ const val CODE_ROUTE = "code"
 const val SKILLS_ROUTE = "skills"
 const val IMAGE_ROUTE = "image"
 const val AUDIO_ROUTE = "audio"
+const val VIDEO_ROUTE = "video"
 
 /** Screens that draw their own top bar and replace the tab bar. */
-private val FULL_SCREEN = setOf(CHAT_ROUTE, RESEARCH_ROUTE, RP_ROUTE, CODE_ROUTE, SKILLS_ROUTE, IMAGE_ROUTE, AUDIO_ROUTE)
+private val FULL_SCREEN = setOf(CHAT_ROUTE, RESEARCH_ROUTE, RP_ROUTE, CODE_ROUTE, SKILLS_ROUTE, IMAGE_ROUTE, AUDIO_ROUTE, VIDEO_ROUTE)
 
 private enum class Tab(val route: String, @StringRes val label: Int, val icon: ImageVector) {
     MODULES("modules", R.string.tab_modules, Icons.Outlined.Apps),
@@ -99,6 +102,8 @@ fun MainScaffold(container: AppContainer) {
                 CodeScreen(container, onBack = { nav.popBackStack() }, onPickModel = pickModel)
             }
             composable(SKILLS_ROUTE) { SkillsScreen(container, onBack = { nav.popBackStack() }) }
+            composable(VIDEO_ROUTE) { VideoScreen(onBack = { nav.popBackStack() }) }
+            composable(IMAGE_ROUTE) { ImageScreen(container, onBack = { nav.popBackStack() }) }
             composable(AUDIO_ROUTE) { AudioScreen(container, onBack = { nav.popBackStack() }) }
             composable(RESEARCH_ROUTE) {
                 ResearchScreen(container, onBack = { nav.popBackStack() }, onPickModel = pickModel)

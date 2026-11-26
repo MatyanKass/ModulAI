@@ -1,0 +1,18 @@
+<resources>
+    <string name="video_intro">Every frame is processed on the phone, so expect seconds per frame: a one-minute clip can take hours. Short clips are best.</string>
+    <string name="video_pick">Pick a video</string>
+    <string name="video_info">%1$d×%2$d · %3$.0f fps · %4$d frames · %5$s</string>
+    <string name="video_upscale">Enhance every frame</string>
+    <string name="video_upscale_hint">Each whole frame goes through the upscaler chosen in the Images module, then is scaled to the output size: sharper detail, no cropping or zoom.</string>
+    <string name="video_size">Output size</string>
+    <string name="video_size_same">Same · %1$d×%2$d</string>
+    <string name="video_size_double">Larger · %1$d×%2$d</string>
+    <string name="video_fps">Double the frame rate</string>
+    <string name="video_fps_hint">Adds a frame between every two. The in-between frame is a blend of its neighbours, not a neural interpolation, so fast motion can look ghosted.</string>
+    <string name="video_start">Start</string>
+    <string name="video_preparing">Preparing… %1$s</string>
+    <string name="video_progress">Frame %1$d of %2$d · %3$s</string>
+    <string name="video_done">Done. The video is saved to Movies/ModulAI.</string>
+    <string name="video_open">Open</string>
+    <string name="video_err_no_upscaler">No upscaler model is installed. Download one in the Images module (Models section).</string>
+</resources>

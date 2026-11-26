@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.stateIn
 private val Context.settings by preferencesDataStore("settings")
 
 /** App-wide singletons. Engines register themselves here as they are added. */
-class AppContainer(private val context: Context) {
+class AppContainer(val context: Context) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     val engines = EngineRegistry().apply { register(LlamaCppEngine(context)) }
     val device = DeviceInspector(context)
