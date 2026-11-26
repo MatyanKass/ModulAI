@@ -1,5 +1,6 @@
 package com.modulai.app
 
+import com.modulai.app.audio.SpeakTool
 import com.modulai.core.agent.Agent
 import com.modulai.core.agent.AgentLog
 import com.modulai.core.agent.AutoTuner
@@ -228,6 +229,7 @@ class ChatController(private val container: AppContainer) {
             { settings.researchDepth },
         ),
         container.code.taskTool(s, SamplingParams(temperature = settings.temperature, effort = settings.effort)),
+        SpeakTool(container.audio),
     )
 
     private suspend fun ensureLoaded(model: ModelDescriptor, settings: RunSettings): TextSession = loadLock.withLock {

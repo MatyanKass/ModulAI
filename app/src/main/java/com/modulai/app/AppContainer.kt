@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.modulai.app.audio.AudioHub
 import com.modulai.app.code.CodeController
 import com.modulai.app.skills.Extensions
 import com.modulai.core.agent.HttpWeb
@@ -38,6 +39,7 @@ class AppContainer(private val context: Context) {
     val web: Web = HttpWeb()
     val characters = CharacterStore(context)
     val extensions = Extensions.of(context)
+    val audio = AudioHub.get(context)
 
     val ageConfirmed: Flow<Boolean> = context.settings.data.map { it[AGE_CONFIRMED] ?: false }
 
