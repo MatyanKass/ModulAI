@@ -32,7 +32,8 @@ private val Context.settings by preferencesDataStore("settings")
 /** App-wide singletons. Engines register themselves here as they are added. */
 class AppContainer(val context: Context) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    val engines = EngineRegistry().apply { register(LlamaCppEngine(context)) }
+    val llama = LlamaCppEngine(context)
+    val engines = EngineRegistry().apply { register(llama) }
     val device = DeviceInspector(context)
     val models = ModelStore(context)
     val chats = ChatStore(java.io.File(context.filesDir, "chats"))
@@ -57,6 +58,7 @@ class AppContainer(val context: Context) {
             webTools = p[WEB_TOOLS] ?: d.webTools,
             rpEmoji = p[RP_EMOJI] ?: d.rpEmoji,
             autoMode = p[AUTO_MODE] ?: d.autoMode,
+            backend = p[BACKEND]?.let { name -> BackendSetting.entries.find { it.name == name } } ?: d.backend,
             researchDepth = p[RESEARCH_DEPTH]?.let { name -> ResearchDepth.entries.find { it.name == name } }
                 ?: d.researchDepth,
         )
@@ -84,6 +86,7 @@ class AppContainer(val context: Context) {
             it[WEB_TOOLS] = s.webTools
             it[RP_EMOJI] = s.rpEmoji
             it[AUTO_MODE] = s.autoMode
+            it[BACKEND] = s.backend.name
             it[RESEARCH_DEPTH] = s.researchDepth.name
         }
     }
@@ -107,6 +110,7 @@ class AppContainer(val context: Context) {
         val WEB_TOOLS = booleanPreferencesKey("web_tools")
         val RP_EMOJI = booleanPreferencesKey("rp_emoji")
         val AUTO_MODE = booleanPreferencesKey("auto_mode")
+        val BACKEND = stringPreferencesKey("backend")
         val RESEARCH_DEPTH = stringPreferencesKey("research_depth")
     }
 }

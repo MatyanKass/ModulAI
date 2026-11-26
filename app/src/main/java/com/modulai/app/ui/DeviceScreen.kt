@@ -6,7 +6,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ListItem
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.dp
+import com.modulai.core.runtime.Backend
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -30,6 +39,13 @@ fun DeviceScreen(container: AppContainer) {
             delay(2000)
         }
     }
+    var gpu by remember { mutableStateOf(GpuInfo(emptyList(), null)) }
+    val backends by produceState(emptySet<Backend>()) {
+        // What the text engine can actually use; the first read probes the GPU driver.
+        value = withContext(Dispatchers.Default) { container.llama.backends }
+        gpu = GpuInfo(container.llama.gpuDevices, container.llama.gpuUnavailableReason)
+    }
+    val scope = rememberCoroutineScope()
     val p = profile ?: return
     val context = LocalContext.current
     fun size(bytes: Long) = Formatter.formatShortFileSize(context, bytes)
@@ -51,13 +67,30 @@ fun DeviceScreen(container: AppContainer) {
             R.string.dev_npu,
             stringResource(if (p.npu == NpuKind.QUALCOMM_HEXAGON) R.string.dev_npu_hexagon else R.string.dev_npu_none),
         )
-        Row(R.string.dev_backends, p.backends.joinToString { it.name })
+        Row(R.string.dev_backends, backends.joinToString { it.name })
+        Row(
+            R.string.dev_gpu,
+            gpu.devices.joinToString().ifEmpty { gpu.reason ?: stringResource(R.string.dev_gpu_checking) },
+        )
+        if (gpu.devices.isEmpty() && gpu.reason != null) {
+            TextButton(
+                onClick = {
+                    scope.launch {
+                        container.llama.retryGpu()
+                        gpu = GpuInfo(container.llama.gpuDevices, container.llama.gpuUnavailableReason)
+                    }
+                },
+                modifier = Modifier.padding(horizontal = 8.dp),
+            ) { Text(stringResource(R.string.dev_gpu_retry)) }
+        }
         Row(
             R.string.dev_engines,
             container.engines.all().joinToString { it.id }.ifEmpty { stringResource(R.string.dev_engines_none) },
         )
     }
 }
+
+private data class GpuInfo(val devices: List<String>, val reason: String?)
 
 @Composable
 private fun Row(label: Int, value: String) {

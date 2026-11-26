@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.modulai.app.AppContainer
+import com.modulai.app.BackendSetting
 import com.modulai.app.Preset
 import com.modulai.app.R
 import com.modulai.app.RunSettings
@@ -59,6 +60,10 @@ fun RunSettingsSheet(container: AppContainer, onDismiss: () -> Unit) {
             Label(R.string.set_effort)
             Chips(Effort.entries, settings.effort, { effortLabel(it) }) { save(settings.custom(effort = it)) }
             Hint(R.string.set_effort_hint)
+
+            Label(R.string.set_backend)
+            Chips(BackendSetting.entries, settings.backend, { backendLabel(it) }) { save(settings.copy(backend = it)) }
+            Hint(R.string.set_backend_hint)
 
             Label(R.string.set_temperature, "%.2f".format(settings.temperature))
             Slider(
@@ -101,6 +106,15 @@ private fun presetLabel(p: Preset) = stringResource(
         Preset.MEDIUM -> R.string.preset_medium
         Preset.HIGH -> R.string.preset_high
         Preset.CUSTOM -> R.string.preset_custom
+    },
+)
+
+@Composable
+private fun backendLabel(b: BackendSetting) = stringResource(
+    when (b) {
+        BackendSetting.CPU -> R.string.backend_cpu
+        BackendSetting.AUTO -> R.string.backend_auto
+        BackendSetting.GPU -> R.string.backend_gpu
     },
 )
 

@@ -10,6 +10,9 @@ enum class Preset(val contextTokens: Int, val effort: Effort) {
     CUSTOM(4096, Effort.MEDIUM),
 }
 
+/** Where the text model runs. AUTO tries the GPU and falls back to the CPU if loading there fails. */
+enum class BackendSetting { CPU, AUTO, GPU }
+
 data class RunSettings(
     val preset: Preset = Preset.MEDIUM,
     val contextTokens: Int = Preset.MEDIUM.contextTokens,
@@ -26,6 +29,8 @@ data class RunSettings(
     val rpEmoji: Boolean = false,
     /** Lower the thinking effort when replies get slow, and summarize old messages instead of dropping them. */
     val autoMode: Boolean = true,
+    /** CPU until GPU speed has been measured on real phones. */
+    val backend: BackendSetting = BackendSetting.CPU,
 ) {
     fun withPreset(p: Preset) =
         if (p == Preset.CUSTOM) copy(preset = p) else copy(preset = p, contextTokens = p.contextTokens, effort = p.effort)

@@ -29,4 +29,12 @@
     <string name="set_auto_hint">Когда ответы замедляются или контекст заполняется, модель думает меньше; старые сообщения сжимаются в краткий пересказ, а не выбрасываются.</string>
     <string name="mod_skills">Скиллы и MCP</string>
     <string name="mod_skills_desc">Расширения возможностей модели</string>
+    <string name="set_backend">Вычисления</string>
+    <string name="backend_cpu">CPU</string>
+    <string name="backend_auto">Авто</string>
+    <string name="backend_gpu">GPU</string>
+    <string name="set_backend_hint">CPU — надёжный вариант. GPU работает на графике Adreno через OpenCL, переключение перезагружает модель; «Авто» пробует GPU и откатывается на CPU, если не вышло. Скорость на GPU ещё не измерена — сравните ток/с сами. Для GPU лучше всего подходят модели Q4_0.</string>
+    <string name="dev_gpu">GPU</string>
+    <string name="dev_gpu_checking">Проверяю…</string>
+    <string name="dev_gpu_retry">Попробовать GPU снова</string>
 </resources>

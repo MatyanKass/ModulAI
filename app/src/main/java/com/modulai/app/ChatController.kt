@@ -17,7 +17,9 @@ import com.modulai.core.characters.activeLorebook
 import com.modulai.core.characters.applyMacros
 import com.modulai.core.characters.buildSystemPrompt
 import com.modulai.core.characters.greeting
+import com.modulai.core.runtime.Backend
 import com.modulai.core.runtime.ChatMessage
+import com.modulai.core.runtime.GenerationException
 import com.modulai.core.runtime.LoadConfig
 import com.modulai.core.runtime.ModelDescriptor
 import com.modulai.core.runtime.PromptTooLongException
@@ -234,26 +236,43 @@ class ChatController(private val container: AppContainer) {
     ) + listOfNotNull(GenerateImageTool(container.context).takeIf { GenerateImageTool.isAvailable(container.context) })
 
     private suspend fun ensureLoaded(model: ModelDescriptor, settings: RunSettings): TextSession = loadLock.withLock {
-        val choice = container.engines.resolve(model, container.device.inspect().backends)
-            ?: error("No engine can run ${model.id}")
-        val config = LoadConfig(
-            backend = choice.backend,
-            contextTokens = settings.contextTokens,
-            threads = settings.threads,
-            lockMemory = settings.lockMemory,
-            useMmap = settings.useMmap,
-        )
-        session?.let { if (loadedWith == config && it.model == model) return it }
-        unload()
-        _state.update { it.copy(loading = true) }
-        try {
-            val s = choice.engine.load(model, config) as TextSession
-            session = s
-            loadedWith = config
-            s
-        } finally {
-            _state.update { it.copy(loading = false) }
+        val wanted = if (settings.backend == BackendSetting.CPU) Backend.CPU else Backend.GPU
+        // Reading the engines' backends probes the GPU driver once; keep it off the main thread.
+        val available = withContext(Dispatchers.Default) { container.device.inspect().backends }
+        var choices = container.engines.candidates(model, available, wanted)
+        if (settings.backend == BackendSetting.CPU) choices = choices.filter { it.backend == Backend.CPU }
+        if (settings.backend == BackendSetting.GPU && choices.none { it.backend == Backend.GPU }) {
+            throw GenerationException(container.llama.gpuUnavailableReason ?: "No GPU is available for ${model.id}")
         }
+        if (choices.isEmpty()) error("No engine can run ${model.id}")
+
+        var failure: Exception? = null
+        for (choice in choices) {
+            val config = LoadConfig(
+                backend = choice.backend,
+                contextTokens = settings.contextTokens,
+                threads = settings.threads,
+                lockMemory = settings.lockMemory,
+                useMmap = settings.useMmap,
+            )
+            session?.let { if (loadedWith == config && it.model == model) return it }
+            unload()
+            _state.update { it.copy(loading = true) }
+            try {
+                val s = choice.engine.load(model, config) as TextSession
+                session = s
+                loadedWith = config
+                return s
+            } catch (e: GenerationException) {
+                failure = e
+                // An explicit GPU choice shows the GPU error; AUTO moves on to the CPU.
+                if (settings.backend == BackendSetting.GPU) throw e
+                log.add(LogKind.ERROR, "GPU load failed, using CPU", e.message.orEmpty())
+            } finally {
+                _state.update { it.copy(loading = false) }
+            }
+        }
+        throw failure ?: IllegalStateException("No engine can run ${model.id}")
     }
 
     private fun unload() {
