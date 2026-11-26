@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include <atomic>
+#include <cstdlib>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -63,6 +64,16 @@ void log_callback(ggml_log_level level, const char * text, void *) {
     } else if (level == GGML_LOG_LEVEL_WARN) {
         __android_log_write(ANDROID_LOG_WARN, TAG, text);
     }
+}
+
+std::vector<ggml_backend_dev_t> gpu_devices() {
+    std::vector<ggml_backend_dev_t> out;
+    for (size_t i = 0; i < ggml_backend_dev_count(); i++) {
+        ggml_backend_dev_t dev = ggml_backend_dev_get(i);
+        const auto type = ggml_backend_dev_type(dev);
+        if (type == GGML_BACKEND_DEVICE_TYPE_GPU || type == GGML_BACKEND_DEVICE_TYPE_IGPU) out.push_back(dev);
+    }
+    return out;
 }
 
 std::string to_string(JNIEnv * env, jstring js) {
@@ -218,6 +229,35 @@ Java_com_modulai_engine_llamacpp_LlamaNative_init(JNIEnv * env, jobject, jstring
     }
 }
 
+// Loads the OpenCL backend, which init() cannot see (see CMakeLists.txt), and returns one line
+// per usable GPU. A missing or broken driver makes dlopen fail and leaves the list empty;
+// lastError() then tells why.
+JNIEXPORT jobjectArray JNICALL
+Java_com_modulai_engine_llamacpp_LlamaNative_loadGpuBackend(
+        JNIEnv * env, jobject, jstring libDir, jstring kernelCacheDir) {
+    clear_errors();
+    // Compiling the kernels takes many seconds, so the backend caches the binaries. Its
+    // default location derives from TMPDIR, which app processes do not have.
+    setenv("GGML_OPENCL_KERNEL_CACHE_DIR", to_string(env, kernelCacheDir).c_str(), 1);
+    if (!ggml_backend_reg_by_name("OpenCL")) {
+        ggml_backend_load((to_string(env, libDir) + "/libmodulai-ggml-opencl.so").c_str());
+    }
+    const auto devices = gpu_devices();
+    jobjectArray out = env->NewObjectArray((jsize) devices.size(), env->FindClass("java/lang/String"), nullptr);
+    for (size_t i = 0; i < devices.size(); i++) {
+        size_t free = 0, total = 0;
+        ggml_backend_dev_memory(devices[i], &free, &total);
+        std::string line = std::string(ggml_backend_dev_description(devices[i])) + " (" +
+                           std::to_string(total / (1024 * 1024)) + " MiB)";
+        for (auto & c : line) if ((unsigned char) c >= 0x80) c = '?';
+        jstring js = env->NewStringUTF(line.c_str());
+        env->SetObjectArrayElement(out, (jsize) i, js);
+        env->DeleteLocalRef(js);
+        LOGI("GPU device %zu: %s", i, line.c_str());
+    }
+    return out;
+}
+
 JNIEXPORT jint JNICALL
 Java_com_modulai_engine_llamacpp_LlamaNative_backendCount(JNIEnv *, jobject) {
     return (jint) ggml_backend_reg_count();
@@ -242,7 +282,20 @@ JNIEXPORT jlong JNICALL
 Java_com_modulai_engine_llamacpp_LlamaNative_load(
         JNIEnv * env, jobject, jstring path, jint nCtx, jint nThreads, jint nGpuLayers,
         jboolean useMlock, jboolean useMmap) {
+    clear_errors();
     llama_model_params mp = llama_model_default_params();
+    // An explicit device list, empty for a CPU load: with the default (all devices) llama.cpp
+    // would initialise the GPU backend and compile its kernels even with no layer offloaded.
+    ggml_backend_dev_t devices[2] = {nullptr, nullptr};
+    if (nGpuLayers != 0) {
+        const auto gpus = gpu_devices();
+        if (gpus.empty()) {
+            add_error("no GPU device is available");
+            return 0;
+        }
+        devices[0] = gpus[0];
+    }
+    mp.devices = devices;
     mp.n_gpu_layers = nGpuLayers;
     if (useMmap && useMlock) mp.load_mode = LLAMA_LOAD_MODE_MMAP_MLOCK;
     else if (useMmap) mp.load_mode = LLAMA_LOAD_MODE_MMAP;
@@ -250,7 +303,6 @@ Java_com_modulai_engine_llamacpp_LlamaNative_load(
     else mp.load_mode = LLAMA_LOAD_MODE_NONE;
 
     const std::string file = to_string(env, path);
-    clear_errors();
     llama_model * model = llama_model_load_from_file(file.c_str(), mp);
     if (!model) {
         LOGE("failed to load model %s", file.c_str());

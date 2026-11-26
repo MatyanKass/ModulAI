@@ -17,6 +17,22 @@ unzip -l "$APK" | grep -q 'lib/arm64-v8a/libggml-cpu' \
 
 unzip -l "$APK" | grep -q 'lib/arm64-v8a/libmodulai-sd.so' \
     || { echo "FAIL no image engine library in the APK"; fail=1; }
+# Optional GPU backend (ggml-opencl, renamed; see engines/llm-llamacpp/src/main/cpp/CMakeLists.txt).
+# It must come without an OpenCL loader of its own: a bundled libOpenCL.so would be found
+# before the vendor driver and the GPU would never work.
+unzip -l "$APK" | grep -q 'lib/arm64-v8a/libmodulai-ggml-opencl\.so' \
+    || { echo "FAIL no ggml OpenCL backend library in the APK"; fail=1; }
+# From Android 12 an app may load the vendor's libOpenCL.so only if the manifest asks for it.
+"$BT/aapt2" dump xmltree --file AndroidManifest.xml "$APK" | grep -A2 'E: uses-native-library' \
+    | grep -q '"libOpenCL.so"' \
+    || { echo "FAIL the manifest does not declare <uses-native-library> for libOpenCL.so"; fail=1; }
+if unzip -l "$APK" | grep -q 'lib/arm64-v8a/libOpenCL\.so'; then
+    echo "FAIL the APK bundles libOpenCL.so, which shadows the vendor driver"; fail=1
+fi
+# ggml loads every libggml-opencl*.so on its own, before the engine's crash guard is in place.
+if unzip -l "$APK" | grep -q 'lib/arm64-v8a/libggml-opencl'; then
+    echo "FAIL the OpenCL backend is packaged under a name ggml loads unguarded"; fail=1
+fi
 
 # The JNI bridge calls the PieceCallback methods by name; the shrinker must keep them.
 unzip -q -o "$APK" 'classes*.dex' -d "$TMP"
@@ -25,7 +41,7 @@ for method in onPiece onToolCall onProgress; do
     for dex in "$TMP"/classes*.dex; do
         if "$BT/dexdump" "$dex" 2>/dev/null | grep -q "name          : '$method'"; then found=1; fi
     done
-    [ "$found" = 1 ] || { echo "FAIL PieceCallback.$method was renamed or removed"; fail=1; }
+    [ "$found" = 1 ] || { echo "FAIL JNI callback $method was renamed or removed"; fail=1; }
 done
 
 [ "$fail" = 0 ] && echo "APK checks passed"

@@ -9,3 +9,9 @@
 	path = engines/image-sdcpp/src/main/cpp/stable-diffusion.cpp
 	url = https://github.com/leejet/stable-diffusion.cpp
 	shallow = true
+[submodule "engines/llm-llamacpp/src/main/cpp/third_party/OpenCL-Headers"]
+	path = engines/llm-llamacpp/src/main/cpp/third_party/OpenCL-Headers
+	url = https://github.com/KhronosGroup/OpenCL-Headers
+[submodule "engines/llm-llamacpp/src/main/cpp/third_party/OpenCL-ICD-Loader"]
+	path = engines/llm-llamacpp/src/main/cpp/third_party/OpenCL-ICD-Loader
+	url = https://github.com/KhronosGroup/OpenCL-ICD-Loader

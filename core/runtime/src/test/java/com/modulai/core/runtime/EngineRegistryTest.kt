@@ -2,6 +2,7 @@ package com.modulai.core.runtime
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class EngineRegistryTest {
@@ -43,5 +44,28 @@ class EngineRegistryTest {
 
     @Test fun nullWhenNothingFits() {
         assertNull(registry.resolve(qnn, setOf(Backend.CPU)))
+    }
+
+    @Test fun candidatesListTheGpuToCpuFallback() {
+        val c = registry.candidates(gguf, all)
+        assertEquals(listOf("llama" to Backend.GPU, "llama" to Backend.CPU), c.map { it.engine.id to it.backend })
+    }
+
+    @Test fun candidatesStartWithThePreferredBackend() {
+        assertEquals(
+            listOf(Backend.CPU, Backend.GPU),
+            registry.candidates(gguf, all, preferred = Backend.CPU).map { it.backend },
+        )
+    }
+
+    // An engine that found no usable GPU does not list it, whatever the device profile says.
+    @Test fun candidatesSkipBackendsTheEngineLacks() {
+        val cpuOnly = EngineRegistry().apply { register(FakeEngine("llama", setOf(Backend.CPU), ModelFormat.GGUF)) }
+        assertEquals(listOf(Backend.CPU), cpuOnly.candidates(gguf, all, preferred = Backend.GPU).map { it.backend })
+    }
+
+    @Test fun resolveIsTheFirstCandidate() {
+        assertEquals(registry.candidates(gguf, all).first(), registry.resolve(gguf, all))
+        assertTrue(registry.candidates(qnn, setOf(Backend.CPU)).isEmpty())
     }
 }

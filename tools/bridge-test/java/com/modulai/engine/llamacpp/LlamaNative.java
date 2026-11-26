@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class LlamaNative {
     public native void init(String dir);
+    public native String[] loadGpuBackend(String dir, String kernelCacheDir);
     public native String systemInfo();
     public native int backendCount();
     public native String lastError();
@@ -81,6 +82,33 @@ public class LlamaNative {
         check(n.backendCount() > 0, "a compute backend is registered");
         check(n.load("/nonexistent.gguf", 2048, threads, 0, false, true) == 0, "missing file returns 0");
         check(n.lastError().contains("nonexistent"), "load failure explains itself: " + n.lastError());
+
+        // The default build of this test has no OpenCL backend, like a phone without a usable
+        // driver: the GPU must be reported as absent and must fail without harming CPU loads.
+        // With GPU=1 (see run.sh) the same calls go through whatever OpenCL the machine has.
+        int backendsBefore = n.backendCount();
+        String[] gpus = n.loadGpuBackend(a[0], a[0] + "/cl-cache");
+        System.out.println("GPU " + java.util.Arrays.toString(gpus) + " " + n.lastError());
+        boolean expectGpu = System.getenv("GPU") != null;
+        if (!expectGpu) {
+            check(gpus.length == 0, "no GPU device without an OpenCL backend");
+            check(n.lastError().contains("libmodulai-ggml-opencl.so"), "missing GPU backend explains itself");
+            check(n.backendCount() == backendsBefore, "CPU backends survive the failed GPU backend load");
+            check(n.loadGpuBackend(a[0], a[0] + "/cl-cache").length == 0, "probing again is harmless");
+            check(n.load(a[1] + "/smol.gguf", 2048, threads, -1, false, true) == 0, "GPU load without a GPU returns 0");
+            check(n.lastError().contains("GPU"), "GPU load failure explains itself: " + n.lastError());
+        } else if (gpus.length > 0) {
+            long g = n.load(a[1] + "/smol.gguf", 2048, threads, -1, false, true);
+            check(g != 0, "GPU load: " + n.lastError());
+            if (g != 0) {
+                String onGpu = run(n, g, new String[]{"user"}, new String[]{"Say hello."}, 20, false, 0, code);
+                show(onGpu);
+                check(!onGpu.isEmpty() && code[0] >= 0, "generation on the GPU device");
+                n.free(g);
+            }
+        } else {
+            System.out.println("SKIP no OpenCL device this backend accepts");
+        }
 
         String[] r1 = {"system", "user"};
         String[] c1 = {"You are a helpful assistant.", "Привет! Tell me one sentence about cats 😀"};
