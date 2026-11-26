@@ -1,0 +1,106 @@
+<resources>
+    <string name="img_models">Модели для картинок</string>
+    <string name="img_history">История</string>
+    <string name="img_history_empty">Здесь будут храниться созданные картинки.</string>
+    <string name="img_no_model">Модель не выбрана</string>
+    <string name="img_need_model">Для генерации нужна модель. Скачайте одну из списка или добавьте свой файл.</string>
+    <string name="img_need_upscaler">Для увеличения нужна модель-апскейлер. Она маленькая: скачайте её из списка.</string>
+
+    <string name="img_mode_txt2img">По тексту</string>
+    <string name="img_mode_img2img">По картинке</string>
+    <string name="img_mode_upscale">Увеличить</string>
+
+    <string name="img_prompt">Промпт</string>
+    <string name="img_prompt_help">Опишите картинку по-английски: что изображено, где, в каком стиле, какой свет.</string>
+    <string name="img_negative">Негативный промпт</string>
+    <string name="img_source">Исходная картинка</string>
+    <string name="img_pick_source">Выбрать картинку</string>
+    <string name="img_change_source">Выбрать другую</string>
+    <string name="img_strength">Сила изменений</string>
+    <string name="img_strength_hint">При малых значениях исходник почти не меняется, при больших от него остаётся только композиция.</string>
+    <string name="img_one_step_edit">Одношаговые модели всегда рисуют с нуля и не учитывают исходник. Для этого режима возьмите модель Turbo, LCM или обычную.</string>
+    <string name="img_upscale_hint">Картинка увеличивается целиком, блок за блоком. Если результат вышел бы больше %1$d мегапикселей, исходник сначала уменьшается.</string>
+
+    <string name="img_preset_summary">%1$d×%2$d, шагов: %3$d</string>
+    <string name="img_width">Ширина</string>
+    <string name="img_height">Высота</string>
+    <string name="img_size_hint">Время и память растут вместе с площадью. Лучше всего модели рисуют в том размере, на котором обучались, обычно это 512.</string>
+    <string name="img_steps">Шаги</string>
+    <string name="img_cfg">Сила промпта (CFG)</string>
+    <string name="img_cfg_hint">Обычным моделям подходит около 7. Моделям Turbo и LCM — от 1 до 2, иначе картинка «пережигается».</string>
+    <string name="img_sampler">Сэмплер</string>
+    <string name="img_sampler_auto">Авто</string>
+    <string name="img_seed">Сид</string>
+    <string name="img_seed_hint">Оставьте пустым, чтобы каждый раз получать новую случайную картинку.</string>
+    <string name="img_threads_hint">Применится при следующей загрузке модели. Если потоков больше, чем быстрых ядер, работа замедляется.</string>
+
+    <string name="img_generate">Создать</string>
+    <string name="img_upscale">Увеличить</string>
+    <string name="img_phase_loading">Загрузка модели…</string>
+    <string name="img_phase_starting">Запуск…</string>
+    <string name="img_phase_step">Шаг %1$d из %2$d</string>
+    <string name="img_phase_decoding">Превращаем результат в картинку…</string>
+    <string name="img_phase_tile">Блок %1$d из %2$d</string>
+    <string name="img_phase_saving">Сохранение…</string>
+    <string name="img_phase_stopping">Останавливаем…</string>
+    <string name="img_busy_hint">На телефоне это занимает минуты. Не закрывайте приложение; экран не погаснет.</string>
+    <string name="img_stopping_hint">Текущий шаг прервать нельзя: работа остановится, как только он закончится.</string>
+
+    <string name="img_result_info">%1$d×%2$d · шагов: %3$d · сид %4$d · %5$s</string>
+    <string name="img_result_upscaled">%1$d×%2$d · %3$s</string>
+    <string name="img_save">В галерею</string>
+    <string name="img_share">Поделиться</string>
+    <string name="img_use_as_source">Взять за основу</string>
+    <string name="img_saved">Сохранено в Pictures/ModulAI.</string>
+    <string name="img_delete_title">Удалить эту картинку?</string>
+
+    <string name="img_kind_checkpoint">Модели</string>
+    <string name="img_kind_checkpoint_hint">Stable Diffusion одним файлом: SD 1.x, SD 2.x, SDXL и их варианты Turbo и LCM.</string>
+    <string name="img_kind_upscaler">Апскейлеры</string>
+    <string name="img_kind_upscaler_hint">Модели типа ESRGAN, увеличивающие картинку в 4 раза.</string>
+    <string name="img_kind_taesd">Быстрый декодер (TAESD)</string>
+    <string name="img_kind_taesd_hint">Заменяет последний, самый прожорливый по памяти этап маленькой сетью: быстрее и легче, но картинка чуть мягче. Только для моделей SD 1.x и 2.x.</string>
+    <string name="img_kind_vae">VAE</string>
+    <string name="img_kind_vae_hint">Заменяет VAE, встроенный в модель. Нужен, только если так написано на странице модели.</string>
+    <string name="img_kind_lora">LoRA</string>
+    <string name="img_kind_lora_hint">Небольшие дополнения, меняющие стиль или персонажа. Должны подходить к семейству модели.</string>
+    <string name="img_models_none">Не использовать</string>
+    <string name="img_lora_weight">Сила LoRA: %1$.2f</string>
+    <string name="img_models_add">Добавить свой файл</string>
+    <string name="img_link_hint">Ссылка на файл на Hugging Face</string>
+    <string name="img_link_help">Ссылка на один файл (%1$s).</string>
+    <string name="img_link_need_file">Это ссылка на весь репозиторий. Откройте нужный файл на Hugging Face и скопируйте ссылку на него.</string>
+
+    <string name="img_profile">Тип модели</string>
+    <string name="img_profile_hint">От него зависит, что означают пресеты качества. С неверным типом получится шум или «пережжённая» картинка.</string>
+    <string name="img_profile_standard">Обычная</string>
+    <string name="img_profile_lcm">LCM</string>
+    <string name="img_profile_turbo">Turbo</string>
+    <string name="img_profile_one_step">Один шаг</string>
+
+    <string name="img_cat_sdxs">SDXS 512</string>
+    <string name="img_cat_sdxs_desc">Самая быстрая: один шаг, картинка за секунды. Только простые сюжеты, лица и детали получаются грубо.</string>
+    <string name="img_cat_turbo">SD Turbo</string>
+    <string name="img_cat_turbo_desc">1–4 шага при 512×512, около 3 ГБ памяти. Заметно лучше SDXS. Лицензия запрещает коммерческое использование.</string>
+    <string name="img_cat_lcm">DreamShaper 8 LCM</string>
+    <string name="img_cat_lcm_desc">4–8 шагов, самая красивая из быстрых моделей: иллюстрации и полуреализм.</string>
+    <string name="img_cat_sd15">Stable Diffusion 1.5</string>
+    <string name="img_cat_sd15_desc">Классическая базовая модель: от 20 шагов, то есть несколько минут на картинку. Подходит для большинства LoRA.</string>
+    <string name="img_cat_taesd">TAESD</string>
+    <string name="img_cat_taesd_desc">Маленький декодер для моделей SD 1.x и 2.x. Экономит время и около 1 ГБ памяти на последнем этапе.</string>
+    <string name="img_cat_esrgan_anime">RealESRGAN x4 anime</string>
+    <string name="img_cat_esrgan_anime_desc">Лёгкий апскейлер 4×, примерно вчетверо быстрее полного. Лучше всего для рисунков; фотографии сглаживает.</string>
+    <string name="img_cat_esrgan">RealESRGAN x4</string>
+    <string name="img_cat_esrgan_desc">Полный апскейлер 4× для фотографий и реалистичных картинок. Медленный: минуты даже на небольшую картинку.</string>
+
+    <string name="img_err_no_prompt">Сначала напишите промпт.</string>
+    <string name="img_err_no_model">Сначала выберите модель для картинок.</string>
+    <string name="img_err_no_upscaler">Сначала выберите модель-апскейлер.</string>
+    <string name="img_err_busy">Сейчас уже создаётся другая картинка.</string>
+    <string name="img_err_stopped">Создание картинки остановлено.</string>
+    <string name="img_err_no_result">Модель не вернула картинку.</string>
+    <string name="img_err_decode">Не удалось прочитать этот файл как картинку.</string>
+    <string name="img_err_file_type">Для такой модели нужен файл типа: %1$s.</string>
+    <string name="img_err_open">Не удалось скопировать %1$s.</string>
+    <string name="img_err_save">Не удалось сохранить картинку: %1$s</string>
+</resources>

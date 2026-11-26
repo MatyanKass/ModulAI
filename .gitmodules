@@ -5,3 +5,7 @@
 	path = engines/audio/src/main/cpp/whisper.cpp
 	url = https://github.com/ggml-org/whisper.cpp
 	shallow = true
+[submodule "engines/image-sdcpp/src/main/cpp/stable-diffusion.cpp"]
+	path = engines/image-sdcpp/src/main/cpp/stable-diffusion.cpp
+	url = https://github.com/leejet/stable-diffusion.cpp
+	shallow = true

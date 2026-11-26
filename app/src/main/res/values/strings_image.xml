@@ -1,0 +1,106 @@
+<resources>
+    <string name="img_models">Image models</string>
+    <string name="img_history">History</string>
+    <string name="img_history_empty">Pictures you make will be kept here.</string>
+    <string name="img_no_model">No model chosen</string>
+    <string name="img_need_model">Image generation needs a model. Download one from the list or add your own file.</string>
+    <string name="img_need_upscaler">Upscaling needs an upscaler model. It is small: download one from the list.</string>
+
+    <string name="img_mode_txt2img">From text</string>
+    <string name="img_mode_img2img">From image</string>
+    <string name="img_mode_upscale">Upscale</string>
+
+    <string name="img_prompt">Prompt</string>
+    <string name="img_prompt_help">Describe the picture in English: subject, setting, style, lighting.</string>
+    <string name="img_negative">Negative prompt</string>
+    <string name="img_source">Source image</string>
+    <string name="img_pick_source">Pick an image</string>
+    <string name="img_change_source">Pick another image</string>
+    <string name="img_strength">Change strength</string>
+    <string name="img_strength_hint">Low values keep the source almost as it is; high values keep only its composition.</string>
+    <string name="img_one_step_edit">One-step models always start from scratch and ignore the source. Use a Turbo, LCM or regular model here.</string>
+    <string name="img_upscale_hint">The whole picture is enlarged block by block. Sources too big for a %1$d-megapixel result are reduced first.</string>
+
+    <string name="img_preset_summary">%1$d×%2$d, steps: %3$d</string>
+    <string name="img_width">Width</string>
+    <string name="img_height">Height</string>
+    <string name="img_size_hint">Time and memory grow with the area. Models draw best at the size they were trained on, usually 512.</string>
+    <string name="img_steps">Steps</string>
+    <string name="img_cfg">Prompt strength (CFG)</string>
+    <string name="img_cfg_hint">Regular models: around 7. Turbo and LCM models: 1 to 2, higher values burn the picture.</string>
+    <string name="img_sampler">Sampler</string>
+    <string name="img_sampler_auto">Auto</string>
+    <string name="img_seed">Seed</string>
+    <string name="img_seed_hint">Leave empty for a new random picture every time.</string>
+    <string name="img_threads_hint">Applied when the model is next loaded. More threads than fast cores slows things down.</string>
+
+    <string name="img_generate">Generate</string>
+    <string name="img_upscale">Upscale</string>
+    <string name="img_phase_loading">Loading the model…</string>
+    <string name="img_phase_starting">Starting…</string>
+    <string name="img_phase_step">Step %1$d of %2$d</string>
+    <string name="img_phase_decoding">Turning the result into a picture…</string>
+    <string name="img_phase_tile">Block %1$d of %2$d</string>
+    <string name="img_phase_saving">Saving…</string>
+    <string name="img_phase_stopping">Stopping…</string>
+    <string name="img_busy_hint">This takes minutes on a phone. Keep the app open; the screen stays on.</string>
+    <string name="img_stopping_hint">The current step cannot be interrupted; it stops as soon as that step is done.</string>
+
+    <string name="img_result_info">%1$d×%2$d · steps: %3$d · seed %4$d · %5$s</string>
+    <string name="img_result_upscaled">%1$d×%2$d · %3$s</string>
+    <string name="img_save">Save to gallery</string>
+    <string name="img_share">Share</string>
+    <string name="img_use_as_source">Use as source</string>
+    <string name="img_saved">Saved to Pictures/ModulAI.</string>
+    <string name="img_delete_title">Delete this picture?</string>
+
+    <string name="img_kind_checkpoint">Models</string>
+    <string name="img_kind_checkpoint_hint">A single-file Stable Diffusion checkpoint: SD 1.x, SD 2.x, SDXL and their turbo or LCM variants.</string>
+    <string name="img_kind_upscaler">Upscalers</string>
+    <string name="img_kind_upscaler_hint">ESRGAN-type models that enlarge a picture 4 times.</string>
+    <string name="img_kind_taesd">Fast decoder (TAESD)</string>
+    <string name="img_kind_taesd_hint">Replaces the last, memory-hungry stage with a tiny network: faster and lighter, slightly softer. For SD 1.x and 2.x models only.</string>
+    <string name="img_kind_vae">VAE</string>
+    <string name="img_kind_vae_hint">Replaces the VAE built into the model. Needed only if the model\'s page says so.</string>
+    <string name="img_kind_lora">LoRA</string>
+    <string name="img_kind_lora_hint">Small add-ons that change style or subject. They must match the model family.</string>
+    <string name="img_models_none">None</string>
+    <string name="img_lora_weight">LoRA strength: %1$.2f</string>
+    <string name="img_models_add">Add your own file</string>
+    <string name="img_link_hint">Hugging Face file link</string>
+    <string name="img_link_help">A link to one file (%1$s).</string>
+    <string name="img_link_need_file">This link points to a whole repository. Open the file on Hugging Face and copy its link.</string>
+
+    <string name="img_profile">Model type</string>
+    <string name="img_profile_hint">Decides what the quality presets mean. A wrong type gives noise or burnt pictures.</string>
+    <string name="img_profile_standard">Regular</string>
+    <string name="img_profile_lcm">LCM</string>
+    <string name="img_profile_turbo">Turbo</string>
+    <string name="img_profile_one_step">One step</string>
+
+    <string name="img_cat_sdxs">SDXS 512</string>
+    <string name="img_cat_sdxs_desc">The fastest: one step, a picture in seconds. Simple scenes only, faces and details are rough.</string>
+    <string name="img_cat_turbo">SD Turbo</string>
+    <string name="img_cat_turbo_desc">1–4 steps at 512×512, about 3 GB of memory. Noticeably better than SDXS. Non-commercial licence.</string>
+    <string name="img_cat_lcm">DreamShaper 8 LCM</string>
+    <string name="img_cat_lcm_desc">4–8 steps, the best-looking of the fast models: illustration and semi-realism.</string>
+    <string name="img_cat_sd15">Stable Diffusion 1.5</string>
+    <string name="img_cat_sd15_desc">The classic base model: 20 steps and more, so several minutes per picture. Works with most LoRA files.</string>
+    <string name="img_cat_taesd">TAESD</string>
+    <string name="img_cat_taesd_desc">Tiny decoder for SD 1.x and 2.x models. Saves time and about 1 GB of memory at the last stage.</string>
+    <string name="img_cat_esrgan_anime">RealESRGAN x4 anime</string>
+    <string name="img_cat_esrgan_anime_desc">Light 4× upscaler, about four times faster than the full one. Best for drawings; smooths photos.</string>
+    <string name="img_cat_esrgan">RealESRGAN x4</string>
+    <string name="img_cat_esrgan_desc">Full 4× upscaler for photos and realistic pictures. Slow: minutes even for a small picture.</string>
+
+    <string name="img_err_no_prompt">Write a prompt first.</string>
+    <string name="img_err_no_model">Choose an image model first.</string>
+    <string name="img_err_no_upscaler">Choose an upscaler model first.</string>
+    <string name="img_err_busy">Another picture is being made right now.</string>
+    <string name="img_err_stopped">The picture was stopped before it was finished.</string>
+    <string name="img_err_no_result">The model returned no picture.</string>
+    <string name="img_err_decode">This file could not be read as a picture.</string>
+    <string name="img_err_file_type">This kind of model needs a file of type: %1$s.</string>
+    <string name="img_err_open">Could not copy %1$s.</string>
+    <string name="img_err_save">Could not save the picture: %1$s</string>
+</resources>
