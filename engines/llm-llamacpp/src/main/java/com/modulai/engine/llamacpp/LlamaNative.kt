@@ -18,10 +18,19 @@ internal object LlamaNative {
         System.loadLibrary("modulai-llama")
     }
 
+    /** Loads the CPU backends only. */
     external fun init(nativeLibDir: String)
+
+    /**
+     * Loads the OpenCL backend and returns a description of every GPU it can use; empty when
+     * there is none, with the reason in [lastError]. May kill the process on a broken driver.
+     */
+    external fun loadGpuBackend(nativeLibDir: String, kernelCacheDir: String): Array<String>
     external fun systemInfo(): String
     external fun backendCount(): Int
     external fun lastError(): String
+
+    /** [nGpuLayers] 0 keeps the GPU untouched, a negative value offloads every layer. Returns 0 on failure. */
     external fun load(
         path: String, nCtx: Int, nThreads: Int, nGpuLayers: Int, useMlock: Boolean, useMmap: Boolean,
     ): Long

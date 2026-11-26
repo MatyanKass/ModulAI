@@ -30,7 +30,18 @@ data class LoadConfig(
     /** Pin weights in RAM so the kernel cannot push them to swap/zram. */
     val lockMemory: Boolean = false,
     val useMmap: Boolean = true,
-)
+    /**
+     * Model layers to run on the GPU when [backend] is [Backend.GPU]: [ALL_LAYERS] (any
+     * negative value), or a count for partial offload when the model does not fit GPU memory;
+     * 0 runs everything on the CPU. Ignored for other backends. The default keeps configs
+     * written before this field existed meaning the same.
+     */
+    val gpuLayers: Int = ALL_LAYERS,
+) {
+    companion object {
+        const val ALL_LAYERS = -1
+    }
+}
 
 /** A loaded model. Capability-specific sessions extend this. */
 interface Session : AutoCloseable {

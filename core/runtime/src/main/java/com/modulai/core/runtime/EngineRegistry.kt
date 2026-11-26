@@ -21,13 +21,23 @@ class EngineRegistry {
         model: ModelDescriptor,
         available: Set<Backend>,
         preferred: Backend? = null,
-    ): EngineChoice? {
-        val candidates = engines.filter { model.capability in it.capabilities && it.supports(model) }
+    ): EngineChoice? = candidates(model, available, preferred).firstOrNull()
+
+    /**
+     * Every engine and backend that can run [model], best first: [resolve] is the first one.
+     * A backend can still fail at load time (a GPU without enough memory, a driver that
+     * rejects a kernel), so callers that want a fallback load the first choice and move on
+     * to the next when [Engine.load] throws.
+     */
+    fun candidates(
+        model: ModelDescriptor,
+        available: Set<Backend>,
+        preferred: Backend? = null,
+    ): List<EngineChoice> {
+        val capable = engines.filter { model.capability in it.capabilities && it.supports(model) }
         val order = listOfNotNull(preferred) + Backend.entries.filter { it != preferred }
-        for (backend in order) {
-            if (backend !in available) continue
-            candidates.firstOrNull { backend in it.backends }?.let { return EngineChoice(it, backend) }
+        return order.filter { it in available }.flatMap { backend ->
+            capable.filter { backend in it.backends }.map { EngineChoice(it, backend) }
         }
-        return null
     }
 }

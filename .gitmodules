@@ -1,3 +1,9 @@
 [submodule "engines/llm-llamacpp/src/main/cpp/llama.cpp"]
 	path = engines/llm-llamacpp/src/main/cpp/llama.cpp
 	url = https://github.com/ggml-org/llama.cpp
+[submodule "engines/llm-llamacpp/src/main/cpp/third_party/OpenCL-Headers"]
+	path = engines/llm-llamacpp/src/main/cpp/third_party/OpenCL-Headers
+	url = https://github.com/KhronosGroup/OpenCL-Headers
+[submodule "engines/llm-llamacpp/src/main/cpp/third_party/OpenCL-ICD-Loader"]
+	path = engines/llm-llamacpp/src/main/cpp/third_party/OpenCL-ICD-Loader
+	url = https://github.com/KhronosGroup/OpenCL-ICD-Loader
