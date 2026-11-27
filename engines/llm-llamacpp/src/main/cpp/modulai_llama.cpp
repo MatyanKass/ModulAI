@@ -5,10 +5,13 @@
 // cache and only evaluates the part of the prompt that changed.
 
 #include <android/log.h>
+#include <dlfcn.h>
 #include <jni.h>
+#include <unistd.h>
 
 #include <atomic>
 #include <cstdlib>
+#include <cstring>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -31,6 +34,16 @@ constexpr int STOP_CANCELLED = 2;
 constexpr int ERR_TEMPLATE = -1;
 constexpr int ERR_PROMPT_TOO_LONG = -2;
 constexpr int ERR_DECODE = -3;
+
+// Device kinds of nativeLoad, mirrored in LlamaNative.kt.
+constexpr int DEVICE_CPU = 0;
+constexpr int DEVICE_GPU = 1;
+constexpr int DEVICE_NPU = 2;
+
+// The oldest Hexagon the HTP skels are built for (ggml/src/ggml-hexagon/CMakeLists.txt builds
+// v73 and newer); older DSPs (Snapdragon 8 Gen 1, v69) would be handed a v73 skel by upstream.
+constexpr int MIN_NPU_ARCH = 73;
+constexpr int CDSP_DOMAIN = 3; // CDSP_DOMAIN_ID in the Hexagon SDK's remote.h
 
 constexpr int BATCH_SIZE = 512;
 
@@ -66,12 +79,49 @@ void log_callback(ggml_log_level level, const char * text, void *) {
     }
 }
 
+// The Hexagon backend registers as "HTP" and calls its devices GPUs (they take -ngl layers the
+// same way), so the registry name is what tells an NPU from a GPU.
+constexpr const char * NPU_REG_NAME = "HTP";
+
+bool is_npu(ggml_backend_dev_t dev) {
+    ggml_backend_reg_t reg = ggml_backend_dev_backend_reg(dev);
+    return reg && strcmp(ggml_backend_reg_name(reg), NPU_REG_NAME) == 0;
+}
+
 std::vector<ggml_backend_dev_t> gpu_devices() {
     std::vector<ggml_backend_dev_t> out;
     for (size_t i = 0; i < ggml_backend_dev_count(); i++) {
         ggml_backend_dev_t dev = ggml_backend_dev_get(i);
         const auto type = ggml_backend_dev_type(dev);
-        if (type == GGML_BACKEND_DEVICE_TYPE_GPU || type == GGML_BACKEND_DEVICE_TYPE_IGPU) out.push_back(dev);
+        if ((type == GGML_BACKEND_DEVICE_TYPE_GPU || type == GGML_BACKEND_DEVICE_TYPE_IGPU) && !is_npu(dev)) {
+            out.push_back(dev);
+        }
+    }
+    return out;
+}
+
+// Set by loadNpuBackend once the DSP answered with an architecture the skels support. Until
+// then the HTP devices, even if registered, are never handed to llama.cpp.
+std::atomic<int> g_npu_arch{0};
+
+std::vector<ggml_backend_dev_t> npu_devices() {
+    std::vector<ggml_backend_dev_t> out;
+    if (g_npu_arch.load() == 0) return out;
+    for (size_t i = 0; i < ggml_backend_dev_count(); i++) {
+        ggml_backend_dev_t dev = ggml_backend_dev_get(i);
+        if (is_npu(dev)) out.push_back(dev);
+    }
+    return out;
+}
+
+jobjectArray to_string_array(JNIEnv * env, const std::vector<std::string> & items) {
+    jobjectArray out = env->NewObjectArray((jsize) items.size(), env->FindClass("java/lang/String"), nullptr);
+    for (size_t i = 0; i < items.size(); i++) {
+        std::string line = items[i];
+        for (auto & c : line) if ((unsigned char) c >= 0x80) c = '?';
+        jstring js = env->NewStringUTF(line.c_str());
+        env->SetObjectArrayElement(out, (jsize) i, js);
+        env->DeleteLocalRef(js);
     }
     return out;
 }
@@ -213,6 +263,62 @@ bool decode(Session * s, const std::vector<llama_token> & tokens, size_t from, l
     return true;
 }
 
+jlong load_model(const std::string & file, jint nCtx, jint nThreads, jint device, int nLayers,
+                 bool useMlock, bool useMmap) {
+    llama_model_params mp = llama_model_default_params();
+    // An explicit device list, empty for a CPU load: with the default (all devices) llama.cpp
+    // would initialise the GPU backend and compile its kernels, or open a DSP session, even
+    // with no layer offloaded. An accelerator load lists exactly one device.
+    ggml_backend_dev_t devices[2] = {nullptr, nullptr};
+    if (device == DEVICE_GPU || device == DEVICE_NPU) {
+        const auto found = device == DEVICE_GPU ? gpu_devices() : npu_devices();
+        if (found.empty()) {
+            add_error(device == DEVICE_GPU ? "no GPU device is available" : "no NPU device is available");
+            return 0;
+        }
+        devices[0] = found[0];
+    } else {
+        nLayers = 0;
+    }
+    mp.devices = devices;
+    mp.n_gpu_layers = nLayers;
+    if (useMmap && useMlock) mp.load_mode = LLAMA_LOAD_MODE_MMAP_MLOCK;
+    else if (useMmap) mp.load_mode = LLAMA_LOAD_MODE_MMAP;
+    else if (useMlock) mp.load_mode = LLAMA_LOAD_MODE_MLOCK;
+    else mp.load_mode = LLAMA_LOAD_MODE_NONE;
+
+    llama_model * model = llama_model_load_from_file(file.c_str(), mp);
+    if (!model) {
+        LOGE("failed to load model %s", file.c_str());
+        return 0;
+    }
+
+    llama_context_params cp = llama_context_default_params();
+    cp.n_ctx = nCtx;
+    cp.n_batch = BATCH_SIZE;
+    cp.n_ubatch = BATCH_SIZE;
+    cp.n_threads = nThreads;
+    cp.n_threads_batch = nThreads;
+    llama_context * ctx = nullptr;
+    try {
+        ctx = llama_init_from_model(model, cp);
+    } catch (...) {
+        llama_model_free(model);
+        throw;
+    }
+    if (!ctx) {
+        LOGE("failed to create context (n_ctx=%d)", nCtx);
+        llama_model_free(model);
+        return 0;
+    }
+
+    auto * s = new Session();
+    s->model = model;
+    s->ctx = ctx;
+    s->templates = common_chat_templates_init(model, "");
+    return (jlong) s;
+}
+
 } // namespace
 
 extern "C" {
@@ -242,20 +348,84 @@ Java_com_modulai_engine_llamacpp_LlamaNative_loadGpuBackend(
     if (!ggml_backend_reg_by_name("OpenCL")) {
         ggml_backend_load((to_string(env, libDir) + "/libmodulai-ggml-opencl.so").c_str());
     }
-    const auto devices = gpu_devices();
-    jobjectArray out = env->NewObjectArray((jsize) devices.size(), env->FindClass("java/lang/String"), nullptr);
-    for (size_t i = 0; i < devices.size(); i++) {
+    std::vector<std::string> lines;
+    for (ggml_backend_dev_t dev : gpu_devices()) {
         size_t free = 0, total = 0;
-        ggml_backend_dev_memory(devices[i], &free, &total);
-        std::string line = std::string(ggml_backend_dev_description(devices[i])) + " (" +
-                           std::to_string(total / (1024 * 1024)) + " MiB)";
-        for (auto & c : line) if ((unsigned char) c >= 0x80) c = '?';
-        jstring js = env->NewStringUTF(line.c_str());
-        env->SetObjectArrayElement(out, (jsize) i, js);
-        env->DeleteLocalRef(js);
-        LOGI("GPU device %zu: %s", i, line.c_str());
+        ggml_backend_dev_memory(dev, &free, &total);
+        lines.push_back(std::string(ggml_backend_dev_description(dev)) + " (" +
+                        std::to_string(total / (1024 * 1024)) + " MiB)");
+        LOGI("GPU device: %s", lines.back().c_str());
     }
-    return out;
+    return to_string_array(env, lines);
+}
+
+// Loads the Hexagon (HTP) NPU backend, which init() cannot see either (see CMakeLists.txt), and
+// returns one line per NPU session llama.cpp may use; empty with the reason in lastError()
+// when there is none. Registering the backend loads the vendor's libcdsprpc.so and asks the
+// DSP for its architecture over FastRPC, but opens no DSP session: that happens on the first
+// NPU load, which is where the skel (the DSP half, libggml-htp-v<arch>.so) is loaded from
+// skelDir. The caller must put the skel for npuArch() there before that load.
+JNIEXPORT jobjectArray JNICALL
+Java_com_modulai_engine_llamacpp_LlamaNative_loadNpuBackend(
+        JNIEnv * env, jobject, jstring libDir, jstring skelDir) {
+    clear_errors();
+    std::vector<std::string> lines;
+    const std::string lib = to_string(env, libDir) + "/libmodulai-ggml-hexagon.so";
+    const std::string skels = to_string(env, skelDir);
+    if (access(lib.c_str(), F_OK) != 0) {
+        add_error("this build has no Hexagon NPU backend (" + lib + " is missing)");
+        return to_string_array(env, lines);
+    }
+    // Where the DSP looks for the skel. Upstream first opens it by absolute path under
+    // GGML_HEXAGON_LIBHTP_DIR, then falls back to the FastRPC search path and finally to
+    // ADSP_LIBRARY_PATH, which replaces the vendor's default search path, so the default
+    // directories are kept after the app's own. Both must be set before libcdsprpc.so loads.
+    const std::string search = skels + ";/vendor/dsp/cdsp;/vendor/lib/rfsa/adsp;/system/lib/rfsa/adsp;"
+                                       "/system/vendor/lib/rfsa/adsp;/odm/lib/rfsa/adsp;/dsp";
+    setenv("ADSP_LIBRARY_PATH", search.c_str(), 1);
+    setenv("GGML_HEXAGON_LIBHTP_DIR", skels.c_str(), 1);
+    // Upstream's default ("burst") pins the DSP at maximum clocks with DCVS off for as long
+    // as the session lives, and a session lives until the process ends, even after the app
+    // goes back to the CPU. This mode keeps DCVS on, so an idle DSP can clock down.
+    setenv("GGML_HEXAGON_POWER_MODE", "sustained_high_performance", 0);
+    if (!ggml_backend_reg_by_name(NPU_REG_NAME)) {
+        ggml_backend_load(lib.c_str());
+    }
+    if (!ggml_backend_reg_by_name(NPU_REG_NAME)) {
+        // The usual cause, libcdsprpc.so not loadable, is already in lastError().
+        add_error("the Hexagon backend did not start");
+        return to_string_array(env, lines);
+    }
+    // Upstream assumes v73 when the DSP does not answer and runs v73 code on anything older,
+    // so ask the DSP again and refuse both cases here, before any DSP session exists.
+    int arch = 0;
+    int err = -1;
+    void * handle = dlopen(lib.c_str(), RTLD_NOW | RTLD_NOLOAD);
+    auto get_arch = handle ? (int (*)(int, int *)) dlsym(handle, "htpdrv_get_arch") : nullptr;
+    if (get_arch) err = get_arch(CDSP_DOMAIN, &arch);
+    if (handle) dlclose(handle);
+    if (!get_arch) {
+        add_error("the Hexagon backend does not export htpdrv_get_arch");
+    } else if (err != 0) {
+        add_error("the NPU did not answer over FastRPC (error " + std::to_string(err) + ")");
+    } else if (arch < MIN_NPU_ARCH) {
+        add_error("Hexagon v" + std::to_string(arch) + " is older than v" + std::to_string(MIN_NPU_ARCH) +
+                  ", the oldest NPU llama.cpp supports");
+    } else {
+        g_npu_arch.store(arch);
+    }
+    for (ggml_backend_dev_t dev : npu_devices()) {
+        lines.push_back(std::string(ggml_backend_dev_name(dev)) + " (Hexagon v" + std::to_string(arch) + ")");
+        LOGI("NPU device: %s", lines.back().c_str());
+    }
+    if (lines.empty() && g_npu_arch.load() != 0) add_error("the Hexagon backend registered no device");
+    return to_string_array(env, lines);
+}
+
+// Hexagon architecture of the NPU (73, 75, 79, ...), 0 until loadNpuBackend accepted it.
+JNIEXPORT jint JNICALL
+Java_com_modulai_engine_llamacpp_LlamaNative_npuArch(JNIEnv *, jobject) {
+    return (jint) g_npu_arch.load();
 }
 
 JNIEXPORT jint JNICALL
@@ -280,53 +450,22 @@ Java_com_modulai_engine_llamacpp_LlamaNative_systemInfo(JNIEnv * env, jobject) {
 
 JNIEXPORT jlong JNICALL
 Java_com_modulai_engine_llamacpp_LlamaNative_load(
-        JNIEnv * env, jobject, jstring path, jint nCtx, jint nThreads, jint nGpuLayers,
+        JNIEnv * env, jobject, jstring path, jint nCtx, jint nThreads, jint device, jint nLayers,
         jboolean useMlock, jboolean useMmap) {
     clear_errors();
-    llama_model_params mp = llama_model_default_params();
-    // An explicit device list, empty for a CPU load: with the default (all devices) llama.cpp
-    // would initialise the GPU backend and compile its kernels even with no layer offloaded.
-    ggml_backend_dev_t devices[2] = {nullptr, nullptr};
-    if (nGpuLayers != 0) {
-        const auto gpus = gpu_devices();
-        if (gpus.empty()) {
-            add_error("no GPU device is available");
-            return 0;
-        }
-        devices[0] = gpus[0];
-    }
-    mp.devices = devices;
-    mp.n_gpu_layers = nGpuLayers;
-    if (useMmap && useMlock) mp.load_mode = LLAMA_LOAD_MODE_MMAP_MLOCK;
-    else if (useMmap) mp.load_mode = LLAMA_LOAD_MODE_MMAP;
-    else if (useMlock) mp.load_mode = LLAMA_LOAD_MODE_MLOCK;
-    else mp.load_mode = LLAMA_LOAD_MODE_NONE;
-
     const std::string file = to_string(env, path);
-    llama_model * model = llama_model_load_from_file(file.c_str(), mp);
-    if (!model) {
-        LOGE("failed to load model %s", file.c_str());
-        return 0;
+    // llama.cpp catches its own exceptions, but the Hexagon backend throws from places llama.cpp
+    // calls without a handler of its own (opening the DSP session, for one). One escaping into
+    // the JVM would abort the process, so it ends here as a failed load.
+    try {
+        return load_model(file, nCtx, nThreads, device, nLayers, useMlock, useMmap);
+    } catch (const std::exception & e) {
+        add_error(std::string(e.what()) + "\n");
+    } catch (...) {
+        add_error("unknown C++ exception while loading the model\n");
     }
-
-    llama_context_params cp = llama_context_default_params();
-    cp.n_ctx = nCtx;
-    cp.n_batch = BATCH_SIZE;
-    cp.n_ubatch = BATCH_SIZE;
-    cp.n_threads = nThreads;
-    cp.n_threads_batch = nThreads;
-    llama_context * ctx = llama_init_from_model(model, cp);
-    if (!ctx) {
-        LOGE("failed to create context (n_ctx=%d)", nCtx);
-        llama_model_free(model);
-        return 0;
-    }
-
-    auto * s = new Session();
-    s->model = model;
-    s->ctx = ctx;
-    s->templates = common_chat_templates_init(model, "");
-    return (jlong) s;
+    LOGE("failed to load model %s", file.c_str());
+    return 0;
 }
 
 JNIEXPORT void JNICALL
@@ -358,9 +497,8 @@ Java_com_modulai_engine_llamacpp_LlamaNative_countTokens(
     return (jint) r.tokens.size();
 }
 
-JNIEXPORT jint JNICALL
-Java_com_modulai_engine_llamacpp_LlamaNative_generate(
-        JNIEnv * env, jobject, jlong handle, jobjectArray roles, jobjectArray contents, jobjectArray tools,
+static jint generate_impl(
+        JNIEnv * env, jlong handle, jobjectArray roles, jobjectArray contents, jobjectArray tools,
         jfloat temperature, jfloat topP, jint topK, jfloat minP, jfloat repeatPenalty,
         jint maxTokens, jint seed, jboolean thinking, jint thinkingBudget, jobject callback) {
     auto * s = (Session *) handle;
@@ -503,6 +641,23 @@ Java_com_modulai_engine_llamacpp_LlamaNative_generate(
         }
     }
     return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_modulai_engine_llamacpp_LlamaNative_generate(
+        JNIEnv * env, jobject, jlong handle, jobjectArray roles, jobjectArray contents, jobjectArray tools,
+        jfloat temperature, jfloat topP, jint topK, jfloat minP, jfloat repeatPenalty,
+        jint maxTokens, jint seed, jboolean thinking, jint thinkingBudget, jobject callback) {
+    // As in load(): an accelerator backend's exception must not reach the JVM.
+    try {
+        return generate_impl(env, handle, roles, contents, tools, temperature, topP, topK, minP, repeatPenalty,
+                             maxTokens, seed, thinking, thinkingBudget, callback);
+    } catch (const std::exception & e) {
+        LOGE("generation failed: %s", e.what());
+    } catch (...) {
+        LOGE("generation failed with an unknown C++ exception");
+    }
+    return ERR_DECODE;
 }
 
 } // extern "C"

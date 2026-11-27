@@ -6,6 +6,12 @@ on:
   pull_request:
     paths-ignore: ['agent-chat/**', '**.md']
 
+env:
+  # Qualcomm's Hexagon SDK for the optional NPU backend of the llama engine; the version the
+  # llama.cpp submodule's docs/backend/snapdragon/README.md names. Proprietary: downloaded
+  # here, never committed.
+  HEXAGON_SDK_VERSION: 6.7.0.0
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,6 +24,29 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
+      - name: Cache the Hexagon SDK download
+        id: hexagon-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/hexagon-sdk-${{ env.HEXAGON_SDK_VERSION }}.tar.xz
+          key: hexagon-sdk-${{ env.HEXAGON_SDK_VERSION }}-amd64-lnx
+      - name: Download the Hexagon SDK
+        if: steps.hexagon-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fL --retry 3 -o "$RUNNER_TEMP/hexagon-sdk-$HEXAGON_SDK_VERSION.tar.xz" \
+            "https://github.com/snapdragon-toolchain/hexagon-sdk/releases/download/v$HEXAGON_SDK_VERSION/hexagon-sdk-v$HEXAGON_SDK_VERSION-amd64-lnx.tar.xz"
+      - name: Set up the Hexagon SDK
+        run: |
+          mkdir -p "$RUNNER_TEMP/hexagon"
+          tar -xJf "$RUNNER_TEMP/hexagon-sdk-$HEXAGON_SDK_VERSION.tar.xz" -C "$RUNNER_TEMP/hexagon"
+          SDK="$RUNNER_TEMP/hexagon/$HEXAGON_SDK_VERSION"
+          test -f "$SDK/hexagon_sdk.json"
+          TOOLS=$(ls -d "$SDK"/tools/HEXAGON_Tools/* | sort -V | tail -1)
+          echo "HEXAGON_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          echo "HEXAGON_TOOLS_ROOT=$TOOLS" >> "$GITHUB_ENV"
+          # Upstream's skel projects need CMake 3.22.2+ and ninja on PATH.
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "cmake;3.31.6" > /dev/null
+          echo "$ANDROID_HOME/cmake/3.31.6/bin" >> "$GITHUB_PATH"
       - name: Unit tests
         run: ./gradlew test
       - name: Assemble APK

@@ -11,10 +11,14 @@ import java.nio.charset.StandardCharsets;
 public class LlamaNative {
     public native void init(String dir);
     public native String[] loadGpuBackend(String dir, String kernelCacheDir);
+    public native String[] loadNpuBackend(String dir, String skelDir);
+    public native int npuArch();
     public native String systemInfo();
     public native int backendCount();
     public native String lastError();
-    public native long load(String path, int nCtx, int nThreads, int nGpuLayers, boolean mlock, boolean mmap);
+    public native long load(String path, int nCtx, int nThreads, int device, int nLayers, boolean mlock, boolean mmap);
+
+    static final int CPU = 0, GPU = 1, NPU = 2;
     public native void free(long h);
     public native int contextSize(long h);
     public native void cancel(long h);
@@ -76,11 +80,11 @@ public class LlamaNative {
         int[] code = new int[1];
         int threads = Math.min(4, Runtime.getRuntime().availableProcessors());
 
-        long h = n.load(a[1] + "/smol.gguf", 2048, threads, 0, false, true);
+        long h = n.load(a[1] + "/smol.gguf", 2048, threads, CPU, 0, false, true);
         check(h != 0, "load smol");
         check(n.contextSize(h) == 2048, "context size");
         check(n.backendCount() > 0, "a compute backend is registered");
-        check(n.load("/nonexistent.gguf", 2048, threads, 0, false, true) == 0, "missing file returns 0");
+        check(n.load("/nonexistent.gguf", 2048, threads, CPU, 0, false, true) == 0, "missing file returns 0");
         check(n.lastError().contains("nonexistent"), "load failure explains itself: " + n.lastError());
 
         // The default build of this test has no OpenCL backend, like a phone without a usable
@@ -95,10 +99,10 @@ public class LlamaNative {
             check(n.lastError().contains("libmodulai-ggml-opencl.so"), "missing GPU backend explains itself");
             check(n.backendCount() == backendsBefore, "CPU backends survive the failed GPU backend load");
             check(n.loadGpuBackend(a[0], a[0] + "/cl-cache").length == 0, "probing again is harmless");
-            check(n.load(a[1] + "/smol.gguf", 2048, threads, -1, false, true) == 0, "GPU load without a GPU returns 0");
+            check(n.load(a[1] + "/smol.gguf", 2048, threads, GPU, -1, false, true) == 0, "GPU load without a GPU returns 0");
             check(n.lastError().contains("GPU"), "GPU load failure explains itself: " + n.lastError());
         } else if (gpus.length > 0) {
-            long g = n.load(a[1] + "/smol.gguf", 2048, threads, -1, false, true);
+            long g = n.load(a[1] + "/smol.gguf", 2048, threads, GPU, -1, false, true);
             check(g != 0, "GPU load: " + n.lastError());
             if (g != 0) {
                 String onGpu = run(n, g, new String[]{"user"}, new String[]{"Say hello."}, 20, false, 0, code);
@@ -109,6 +113,28 @@ public class LlamaNative {
         } else {
             System.out.println("SKIP no OpenCL device this backend accepts");
         }
+
+        // No Hexagon backend or DSP exists here, like any phone without a Snapdragon NPU: the
+        // NPU must be reported as absent with a reason, an NPU load must fail cleanly, and
+        // neither may disturb the CPU session loaded above. The real NPU is device-only.
+        int backendsBeforeNpu = n.backendCount();
+        String[] npus = n.loadNpuBackend(a[0], a[0] + "/htp");
+        System.out.println("NPU " + java.util.Arrays.toString(npus) + " " + n.lastError());
+        check(npus.length == 0, "no NPU device without a Hexagon backend");
+        check(n.npuArch() == 0, "no NPU architecture without a Hexagon backend");
+        check(n.lastError().contains("libmodulai-ggml-hexagon.so"), "missing NPU backend explains itself");
+        check(n.backendCount() == backendsBeforeNpu, "CPU backends survive the failed NPU backend load");
+        check(n.loadNpuBackend(a[0], a[0] + "/htp").length == 0, "probing the NPU again is harmless");
+        check(n.load(a[1] + "/smol.gguf", 2048, threads, NPU, -1, false, true) == 0, "NPU load without an NPU returns 0");
+        check(n.lastError().contains("NPU"), "NPU load failure explains itself: " + n.lastError());
+        check(n.load(a[1] + "/smol.gguf", 2048, threads, NPU, 4, false, true) == 0, "partial NPU load without an NPU returns 0");
+        // A GPU without an NPU (or the reverse) must never be taken for the other.
+        if (!expectGpu) {
+            check(n.load(a[1] + "/smol.gguf", 2048, threads, GPU, -1, false, true) == 0, "the NPU probe adds no GPU");
+        }
+        long afterNpu = n.load(a[1] + "/smol.gguf", 2048, threads, CPU, -1, false, true);
+        check(afterNpu != 0, "CPU loads still work after the NPU attempts: " + n.lastError());
+        if (afterNpu != 0) n.free(afterNpu);
 
         String[] r1 = {"system", "user"};
         String[] c1 = {"You are a helpful assistant.", "Привет! Tell me one sentence about cats 😀"};
@@ -144,7 +170,7 @@ public class LlamaNative {
         check(!run(n, h, r1, c1, 10, false, 0, code).isEmpty(), "session usable after rejection");
         n.free(h);
 
-        long q = n.load(a[1] + "/qwen.gguf", 2048, threads, 0, false, true);
+        long q = n.load(a[1] + "/qwen.gguf", 2048, threads, CPU, 0, false, true);
         check(q != 0, "load qwen");
         String[] rq = {"user"};
         String noThink = run(n, q, rq, new String[]{"What is 17 * 3?"}, 60, false, 0, code);
@@ -175,7 +201,7 @@ public class LlamaNative {
             "no tool call when none is needed");
         n.free(q);
 
-        long tiny = n.load(a[1] + "/qwen.gguf", 256, threads, 0, false, true);
+        long tiny = n.load(a[1] + "/qwen.gguf", 256, threads, CPU, 0, false, true);
         run(n, tiny, rq, new String[]{"Write a very long story about a dragon."}, 0, true, 0, code);
         check(code[0] == 1, "context exhaustion returns LENGTH");
         check(!run(n, tiny, rq, new String[]{"Say hi."}, 20, false, 0, code).isEmpty(), "usable after exhaustion");
@@ -186,7 +212,7 @@ public class LlamaNative {
         int cores = Runtime.getRuntime().availableProcessors();
         for (int t : new int[]{2, 4, 6, 8}) {
             if (t > cores) break;
-            long b = n.load(benchModel, 2048, t, 0, false, true);
+            long b = n.load(benchModel, 2048, t, CPU, 0, false, true);
             if (b == 0) { check(false, "bench load " + benchModel); break; }
             run(n, b, rq, new String[]{"Write a long story about a dragon."}, 128, false, 0, code);
             System.out.printf("BENCH threads=%d tokens=%d tok/s=%.1f model=%s%n",

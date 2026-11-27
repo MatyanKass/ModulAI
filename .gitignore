@@ -11,3 +11,6 @@ captures/
 *.keystore
 *.jks
 .claude/
+# Qualcomm Hexagon SDK (proprietary): keep it outside the repository, never commit it.
+hexagon-sdk*
+hexagon_sdk.json

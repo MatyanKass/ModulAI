@@ -15,7 +15,8 @@ class EngineRegistry {
     /**
      * Picks an engine and backend for [model]. With [preferred] null the order is
      * NPU, GPU, CPU; a preferred backend is tried first and falls back the same way.
-     * [available] is what the device actually has.
+     * [available] is what the device actually has. A backend in an engine's
+     * [Engine.explicitOnlyBackends] is considered only when it is [preferred].
      */
     fun resolve(
         model: ModelDescriptor,
@@ -37,7 +38,8 @@ class EngineRegistry {
         val capable = engines.filter { model.capability in it.capabilities && it.supports(model) }
         val order = listOfNotNull(preferred) + Backend.entries.filter { it != preferred }
         return order.filter { it in available }.flatMap { backend ->
-            capable.filter { backend in it.backends }.map { EngineChoice(it, backend) }
+            capable.filter { backend in it.backends && (backend == preferred || backend !in it.explicitOnlyBackends) }
+                .map { EngineChoice(it, backend) }
         }
     }
 }

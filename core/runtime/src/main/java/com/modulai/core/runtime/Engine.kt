@@ -31,10 +31,10 @@ data class LoadConfig(
     val lockMemory: Boolean = false,
     val useMmap: Boolean = true,
     /**
-     * Model layers to run on the GPU when [backend] is [Backend.GPU]: [ALL_LAYERS] (any
-     * negative value), or a count for partial offload when the model does not fit GPU memory;
-     * 0 runs everything on the CPU. Ignored for other backends. The default keeps configs
-     * written before this field existed meaning the same.
+     * Model layers to offload when [backend] is [Backend.GPU] or [Backend.NPU]: [ALL_LAYERS]
+     * (any negative value), or a count for partial offload when the model does not fit the
+     * accelerator's memory; 0 runs everything on the CPU. Ignored for [Backend.CPU]. The
+     * default keeps configs written before this field existed meaning the same.
      */
     val gpuLayers: Int = ALL_LAYERS,
 ) {
@@ -54,6 +54,13 @@ interface Engine {
     val id: String
     val capabilities: Set<Capability>
     val backends: Set<Backend>
+
+    /**
+     * Backends from [backends] that [EngineRegistry] uses only when the caller names them as
+     * the preferred backend, never on its own: paths too new to pick for a user who did not
+     * ask for them (for llama.cpp, the Hexagon NPU).
+     */
+    val explicitOnlyBackends: Set<Backend> get() = emptySet()
 
     fun supports(model: ModelDescriptor): Boolean
 
