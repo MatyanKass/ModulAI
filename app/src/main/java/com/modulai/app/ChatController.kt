@@ -236,11 +236,21 @@ class ChatController(private val container: AppContainer) {
     ) + listOfNotNull(GenerateImageTool(container.context).takeIf { GenerateImageTool.isAvailable(container.context) })
 
     private suspend fun ensureLoaded(model: ModelDescriptor, settings: RunSettings): TextSession = loadLock.withLock {
-        val wanted = if (settings.backend == BackendSetting.CPU) Backend.CPU else Backend.GPU
+        val wanted = when (settings.backend) {
+            BackendSetting.CPU -> Backend.CPU
+            BackendSetting.NPU -> Backend.NPU
+            else -> Backend.GPU
+        }
         // Reading the engines' backends probes the GPU driver once; keep it off the main thread.
         val available = withContext(Dispatchers.Default) { container.device.inspect().backends }
         var choices = container.engines.candidates(model, available, wanted)
         if (settings.backend == BackendSetting.CPU) choices = choices.filter { it.backend == Backend.CPU }
+        if (settings.backend == BackendSetting.NPU) {
+            choices = choices.filter { it.backend == Backend.NPU }
+            if (choices.isEmpty()) {
+                throw GenerationException(container.llama.npuUnavailableReason ?: "No NPU is available for ${model.id}")
+            }
+        }
         if (settings.backend == BackendSetting.GPU && choices.none { it.backend == Backend.GPU }) {
             throw GenerationException(container.llama.gpuUnavailableReason ?: "No GPU is available for ${model.id}")
         }
@@ -265,8 +275,8 @@ class ChatController(private val container: AppContainer) {
                 return s
             } catch (e: GenerationException) {
                 failure = e
-                // An explicit GPU choice shows the GPU error; AUTO moves on to the CPU.
-                if (settings.backend == BackendSetting.GPU) throw e
+                // An explicit GPU or NPU choice shows its error; AUTO moves on to the CPU.
+                if (settings.backend == BackendSetting.GPU || settings.backend == BackendSetting.NPU) throw e
                 log.add(LogKind.ERROR, "GPU load failed, using CPU", e.message.orEmpty())
             } finally {
                 _state.update { it.copy(loading = false) }

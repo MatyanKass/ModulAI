@@ -10,8 +10,11 @@ enum class Preset(val contextTokens: Int, val effort: Effort) {
     CUSTOM(4096, Effort.MEDIUM),
 }
 
-/** Where the text model runs. AUTO tries the GPU and falls back to the CPU if loading there fails. */
-enum class BackendSetting { CPU, AUTO, GPU }
+/**
+ * Where the text model runs. AUTO tries the GPU and falls back to the CPU if loading there fails;
+ * the NPU is only used when chosen explicitly.
+ */
+enum class BackendSetting { CPU, AUTO, GPU, NPU }
 
 data class RunSettings(
     val preset: Preset = Preset.MEDIUM,

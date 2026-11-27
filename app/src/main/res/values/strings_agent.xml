@@ -33,8 +33,11 @@
     <string name="backend_cpu">CPU</string>
     <string name="backend_auto">Auto</string>
     <string name="backend_gpu">GPU</string>
-    <string name="set_backend_hint">CPU is the safe choice. GPU runs on the Adreno GPU through OpenCL and needs a model reload; Auto tries the GPU and falls back to the CPU if it fails. GPU speed has not been measured yet: compare tok/s yourself. Q4_0 models suit the GPU best.</string>
+    <string name="set_backend_hint">CPU is the safe choice. GPU runs on the Adreno GPU through OpenCL; NPU runs on the Hexagon processor and is experimental. Switching reloads the model. Auto tries the GPU and falls back to the CPU; the NPU is never picked automatically. Speeds have not been measured yet: compare tok/s yourself.</string>
     <string name="dev_gpu">GPU</string>
     <string name="dev_gpu_checking">Checking…</string>
     <string name="dev_gpu_retry">Try the GPU again</string>
+    <string name="backend_npu">NPU</string>
+    <string name="dev_npu_backend">NPU (llama.cpp)</string>
+    <string name="dev_npu_retry">Try the NPU again</string>
 </resources>

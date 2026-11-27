@@ -40,10 +40,12 @@ fun DeviceScreen(container: AppContainer) {
         }
     }
     var gpu by remember { mutableStateOf(GpuInfo(emptyList(), null)) }
+    var npu by remember { mutableStateOf(GpuInfo(emptyList(), null)) }
     val backends by produceState(emptySet<Backend>()) {
         // What the text engine can actually use; the first read probes the GPU driver.
         value = withContext(Dispatchers.Default) { container.llama.backends }
         gpu = GpuInfo(container.llama.gpuDevices, container.llama.gpuUnavailableReason)
+        npu = GpuInfo(container.llama.npuDevices, container.llama.npuUnavailableReason)
     }
     val scope = rememberCoroutineScope()
     val p = profile ?: return
@@ -72,6 +74,21 @@ fun DeviceScreen(container: AppContainer) {
             R.string.dev_gpu,
             gpu.devices.joinToString().ifEmpty { gpu.reason ?: stringResource(R.string.dev_gpu_checking) },
         )
+        Row(
+            R.string.dev_npu_backend,
+            npu.devices.joinToString().ifEmpty { npu.reason ?: stringResource(R.string.dev_gpu_checking) },
+        )
+        if (npu.devices.isEmpty() && npu.reason != null) {
+            TextButton(
+                onClick = {
+                    scope.launch {
+                        container.llama.retryNpu()
+                        npu = GpuInfo(container.llama.npuDevices, container.llama.npuUnavailableReason)
+                    }
+                },
+                modifier = Modifier.padding(horizontal = 8.dp),
+            ) { Text(stringResource(R.string.dev_npu_retry)) }
+        }
         if (gpu.devices.isEmpty() && gpu.reason != null) {
             TextButton(
                 onClick = {

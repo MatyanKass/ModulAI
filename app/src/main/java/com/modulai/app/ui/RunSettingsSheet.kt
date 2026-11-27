@@ -64,6 +64,7 @@ fun RunSettingsSheet(container: AppContainer, onDismiss: () -> Unit) {
             Label(R.string.set_backend)
             Chips(BackendSetting.entries, settings.backend, { backendLabel(it) }) { save(settings.copy(backend = it)) }
             Hint(R.string.set_backend_hint)
+            if (settings.backend == BackendSetting.NPU) Hint(container.llama.npuNote)
 
             Label(R.string.set_temperature, "%.2f".format(settings.temperature))
             Slider(
@@ -115,6 +116,7 @@ private fun backendLabel(b: BackendSetting) = stringResource(
         BackendSetting.CPU -> R.string.backend_cpu
         BackendSetting.AUTO -> R.string.backend_auto
         BackendSetting.GPU -> R.string.backend_gpu
+        BackendSetting.NPU -> R.string.backend_npu
     },
 )
 
@@ -135,9 +137,12 @@ private fun Label(title: Int, value: String? = null) {
 }
 
 @Composable
-private fun Hint(text: Int) {
+private fun Hint(text: Int) = Hint(stringResource(text))
+
+@Composable
+private fun Hint(text: String) {
     Text(
-        stringResource(text),
+        text,
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )

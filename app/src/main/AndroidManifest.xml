@@ -18,6 +18,8 @@
         android:theme="@android:style/Theme.Material.NoActionBar">
         <!-- The GPU backend loads the vendor OpenCL driver; devices without one still run on CPU. -->
         <uses-native-library android:name="libOpenCL.so" android:required="false" />
+        <!-- FastRPC, through which the NPU backend talks to the Hexagon DSP. -->
+        <uses-native-library android:name="libcdsprpc.so" android:required="false" />
 
         <activity
             android:name=".MainActivity"

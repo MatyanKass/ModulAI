@@ -33,8 +33,11 @@
     <string name="backend_cpu">CPU</string>
     <string name="backend_auto">Авто</string>
     <string name="backend_gpu">GPU</string>
-    <string name="set_backend_hint">CPU — надёжный вариант. GPU работает на графике Adreno через OpenCL, переключение перезагружает модель; «Авто» пробует GPU и откатывается на CPU, если не вышло. Скорость на GPU ещё не измерена — сравните ток/с сами. Для GPU лучше всего подходят модели Q4_0.</string>
+    <string name="set_backend_hint">CPU — надёжный вариант. GPU работает на графике Adreno через OpenCL, NPU — на процессоре Hexagon, это экспериментально. Переключение перезагружает модель. «Авто» пробует GPU и откатывается на CPU; NPU сам не выбирается никогда. Скорость ещё не измерена — сравните ток/с сами.</string>
     <string name="dev_gpu">GPU</string>
     <string name="dev_gpu_checking">Проверяю…</string>
     <string name="dev_gpu_retry">Попробовать GPU снова</string>
+    <string name="backend_npu">NPU</string>
+    <string name="dev_npu_backend">NPU (llama.cpp)</string>
+    <string name="dev_npu_retry">Попробовать NPU снова</string>
 </resources>
